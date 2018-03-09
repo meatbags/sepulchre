@@ -1,0 +1,11 @@
+{
+  "name": "sepulchre",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "webpack": "webpack",
+    "watch": "webpack --watch"
+  },
+  "author": "meatbags",
+  "license": ""
+}
