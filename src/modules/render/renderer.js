@@ -1,4 +1,4 @@
-import '../../../lib/glsl';
+import '../../lib/glsl';
 
 class Renderer {
   constructor(width, height, scene, camera) {

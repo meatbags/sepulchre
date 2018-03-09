@@ -1,9 +1,13 @@
 import './CopyShader.js';
-import './DepthBufferPass.js';
-import './DepthShader.js';
 import './EffectComposer.js';
+import './FXAA.js';
+//import './SMAA.js';
+//import './SMAAPass.js';
 import './LuminosityHighPassShader.js';
+import './MobileCheck.js';
 import './RenderPass.js';
 import './ShaderPass.js';
-import './SSAO.js';
-import './UnrealBloomPass.js';
+import './UnrealBloomPass';
+import './mechanics';
+import './noise';
+import './depth';
