@@ -1,35 +1,52 @@
-import { Keyboard } from '../input';
-import { Blend } from '../maths';
+import { Mouse, Keyboard } from '../input';
+import { Blend, MinAngleBetween, TwoPI } from '../maths';
 
 class Player {
-  constructor(scene, colliderSystem) {
-    // represents the player
-
-    this.position = new THREE.Vector3(0, 1, 0);
+  constructor(domElement, scene, colliderSystem) {
+    // handle player input
+    const y = 10;
+    this.domElement = domElement;
+    this.position = new THREE.Vector3(0, y, 0);
+    this.rotation = {pitch: 0, roll: 0, yaw: 0};
     this.motion = new THREE.Vector3();
     this.target = {
-      position: new THREE.Vector3(),
+      position: new THREE.Vector3(0, y, 0),
+      rotation: {pitch: 0, roll: 0, yaw: 0},
       motion: new THREE.Vector3()
     };
-    this.speed = 10;
-    this.jump = 17;
-    this.falling = false;
-    this.fallTime = 0;
-    this.fallTimeThreshold = 0.125;
     this.keys = {};
     this.keyboard = new Keyboard((key) => { this.onKeyboard(key); });
     this.collider = new Collider.Collider(this.target.position, this.motion);
-    this.collider.setPhysics({gravity: 38});
+    this.collider.setPhysics({gravity: 19});
     this.colliderSystem = colliderSystem;
-    this.group = new THREE.Group();
-    this.mesh = new THREE.Mesh(new THREE.BoxBufferGeometry(1, 1, 1), new THREE.MeshPhongMaterial({}));
-    this.mesh.position.y = 0.5;
-    this.light = new THREE.PointLight(0xffffff, 0.25, 5, 2);
-    this.light.position.y = 2;
-    this.group.add(this.mesh, this.light);
+
+    // physics attribs
+    this.speed = 8;
+    this.jumpSpeedMultiplier = 0.5;
+    this.rotationSpeed = Math.PI * 0.9;
+    this.jump = 10;
+    this.falling = false;
+    this.fallTime = 0;
+    this.fallTimeThreshold = 0.2;
+    this.noclip = false;
+    this.noclipSpeed = 30;
+    this.minPitch = -Math.PI * 0.3;
+    this.maxPitch = Math.PI * 0.3;
+    this.adjust = {
+      slow: 0.025,
+      medium: 0.05,
+      fast: 0.1,
+      veryFast: 0.3
+    };
+
+    // set up
+    this.initMouse();
 
     // add to scene
-
+    this.group = new THREE.Group();
+    this.light = new THREE.PointLight(0xffffff, 0.1);
+    this.light.position.y = 1;
+    this.group.add(this.light);
     scene.add(this.group);
   }
 
@@ -56,22 +73,24 @@ class Player {
   }
 
   move(delta) {
-    // translate key input to motion
-
+    // key input to motion
     if (this.keys.left || this.keys.right) {
-      this.target.motion.x = ((this.keys.left ? 1 : 0) + (this.keys.right ? -1 : 0)) * this.speed;
-    } else {
-      this.target.motion.x = 0;
+      this.target.rotation.yaw += (((this.keys.left) ? 1 : 0) + ((this.keys.right) ? -1 : 0)) * this.rotationSpeed * delta;
     }
 
     if (this.keys.up || this.keys.down) {
-      this.target.motion.z = ((this.keys.up ? 1 : 0) + (this.keys.down ? -1 : 0)) * this.speed;
+      const speed = (this.noclip) ? this.noclipSpeed * (1 - Math.abs(Math.sin(this.target.rotation.pitch))) : this.speed;
+      const dir = ((this.keys.up) ? 1 : 0) + ((this.keys.down) ? -1 : 0);
+      this.target.motion.x = Math.sin(this.rotation.yaw) * speed * dir;
+      this.target.motion.z = Math.cos(this.rotation.yaw) * speed * dir;
     } else {
+      this.target.motion.x = 0;
       this.target.motion.z = 0;
     }
 
     if (this.keys.jump) {
       this.keys.jump = false;
+      this.keyboard.release(' ');
 
       if (this.motion.y == 0 || this.fallTime < this.fallTimeThreshold) {
         this.motion.y = this.jump;
@@ -80,25 +99,63 @@ class Player {
     }
 
     this.falling = (this.motion.y != 0);
-    this.fallTime = (this.falling) ? this.fallTime + delta : 0;
+    this.fallTimer = (this.falling) ? this.fallTimer + delta : 0;
 
+    // noclip
+    if (this.keyboard.keys['x']) {
+      this.keyboard.release('x');
+      this.noclip = (this.noclip == false);
+    }
+
+    if (this.noclip) {
+      if (this.keys.up || this.keys.down) {
+        this.target.motion.y = Math.sin(this.target.rotation.pitch) * ((this.keys.up) ? 1 : 0) + ((this.keys.down) ? -1 : 0) * this.noclipSpeed;
+      } else {
+        this.target.motion.y = 0;
+      }
+
+      this.falling = false;
+      this.motion.y = this.target.motion.y;
+    }
+
+    // reduce speed if falling
     if (!this.falling) {
       this.motion.x = this.target.motion.x;
       this.motion.z = this.target.motion.z;
     } else {
-      this.motion.x = Blend(this.motion.x, this.target.motion.x, 0.15);
-      this.motion.z = Blend(this.motion.z, this.target.motion.z, 0.15);
+      this.motion.x = Blend(this.motion.x, this.target.motion.x, this.jumpSpeedMultiplier);
+      this.motion.z = Blend(this.motion.z, this.target.motion.z, this.jumpSpeedMultiplier);
     }
+  }
+
+  initMouse() {
+    // hook up mouse events
+    this.onMouseDown = (e) => {
+      this.mouse.start(e, this.rotation.pitch, this.rotation.yaw);
+    };
+    this.onMouseMove = (e) => {
+      if (this.mouse.isActive() && !(this.keys.left || this.keys.right)) {
+        this.mouse.move(e);
+        this.target.rotation.yaw = this.mouse.getYaw();
+        this.target.rotation.pitch = this.mouse.getPitch(this.minPitch, this.maxPitch);
+      }
+    };
+    this.onMouseUp = (e) => {
+      this.mouse.stop();
+    };
+    this.mouse = new Mouse(this.domElement, this.onMouseDown, this.onMouseMove, this.onMouseUp);
   }
 
   update(delta) {
     this.move(delta);
     this.collider.move(delta, this.colliderSystem);
-    this.position.x = Blend(this.position.x, this.target.position.x, 0.4);
-    this.position.y = Blend(this.position.y, this.target.position.y, 0.4);
-    this.position.z = Blend(this.position.z, this.target.position.z, 0.4);
+    this.position.x = Blend(this.position.x, this.target.position.x, this.adjust.veryFast);
+    this.position.y = Blend(this.position.y, this.target.position.y, this.adjust.veryFast);
+    this.position.z = Blend(this.position.z, this.target.position.z, this.adjust.veryFast);
+    this.rotation.yaw += MinAngleBetween(this.rotation.yaw, this.target.rotation.yaw) * this.adjust.fast;
+    this.rotation.pitch = Blend(this.rotation.pitch, this.target.rotation.pitch, this.adjust.medium);
     this.group.position.set(this.position.x, this.position.y, this.position.z);
-  }
-}
+	}
+};
 
 export { Player };

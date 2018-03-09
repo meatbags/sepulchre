@@ -3,29 +3,43 @@ import { Lighting } from './lighting';
 import { Player } from './player';
 
 class Scene {
-  constructor(width, height) {
+  constructor(domElement, width, height) {
     this.scene = new THREE.Scene();
     this.colliderSystem = new Collider.System();
-    this.player = new Player(this.scene, this.colliderSystem);
-    this.camera = new Camera(width, height, this.player.position);
+    this.player = new Player(domElement, this.scene, this.colliderSystem);
+    this.camera = new Camera(width, height, this.player.position, this.player.rotation);
     this.lighting = new Lighting(this.scene);
 
-    // test the scene
+    // test a scene
+    let floor = new THREE.Mesh(
+      new THREE.BoxBufferGeometry(200, 1, 200),
+      new THREE.MeshPhysicalMaterial({emissive: 0x222222, roughness:1})
+    );
+    this.scene.add(floor);
+    this.colliderSystem.add(new Collider.Mesh(floor));
 
-    for (var i=1; i<20; i++) {
-      const size = Math.random() * 5 + 5;
-      const mesh = new THREE.Mesh(
-        new THREE.BoxBufferGeometry(5, 1.5, 5),
-        new THREE.MeshPhongMaterial({})
+    const rand = (v) => { return Math.random() * v - v / 2; };
+    var angle = 0;
+    var len = 40;
+
+    for (var i=0; i<1000; i++) {
+      angle += 0.03;
+      const x = Math.sin(angle) * len + rand(5);
+      const y = i * 0.3 + rand(2);
+      const z = Math.cos(angle) * len + rand(10);
+      const s = 5 + 2 * Math.random();
+      const h = 3 + Math.random() * 5;
+      const box = new THREE.Mesh(
+        new THREE.BoxBufferGeometry(s, h, s),
+        new THREE.MeshPhysicalMaterial({roughness: 1})
       );
-      mesh.position.set(Math.random() * 15 - 7, i * 2.75, 0);
-      mesh.rotation.set(
-        Math.random() * Math.PI * 0.125 - Math.PI * 0.0625,
-        Math.random() * Math.PI * 0.125 - Math.PI * 0.0625,
-        Math.random() * Math.PI * 0.125 - Math.PI * 0.0625
-      );
-      this.scene.add(mesh);
-      this.colliderSystem.add(new Collider.Mesh(mesh))
+      box.position.set(x, y, z);
+      const rx = rand(Math.PI / 3);
+      const ry = rand(Math.PI / 3);
+      const rz = rand(Math.PI / 3);
+      box.rotation.set(rx, ry, rz);
+      this.scene.add(box);
+      this.colliderSystem.add(new Collider.Mesh(box));
     }
   }
 

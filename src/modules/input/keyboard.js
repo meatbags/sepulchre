@@ -18,6 +18,11 @@ class Keyboard {
     this.onEvent(key.key);
   }
 
+  release(key) {
+    // force release
+    this.keys[key] = false;
+  }
+
   isSpecial() {
     return (this.keys['Shift'] || this.keys['Control'] || this.keys['Alt']);
   }

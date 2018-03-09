@@ -1,7 +1,7 @@
 import '../../lib/glsl';
 
 class Renderer {
-  constructor(width, height, scene, camera) {
+  constructor(domElement, width, height, scene, camera) {
     // webgl renderer
     this.scene = scene;
     this.camera = camera;
@@ -10,14 +10,15 @@ class Renderer {
     this.size = new THREE.Vector2(this.width, this.height);
     this.renderer = new THREE.WebGLRenderer({antialias: true});
     this.renderer.setSize(this.width, this.height);
-    this.renderer.setClearColor(0x101010, 1);
+    this.renderer.setClearColor(0x444444, 1);
     this.postProcessingSetup();
 
     // add to doc
-    $('.content__inner').append(this.renderer.domElement);
+    domElement.append(this.renderer.domElement);
   }
 
   resize(width, height) {
+    // resize screen and pp render passes
     this.width = width;
     this.height = height;
     this.size.x = this.width;
@@ -30,17 +31,15 @@ class Renderer {
 
   postProcessingSetup() {
     // post processing passes
-    const strength = 0.7;
-    const radius = 1.0;
-    const threshold = 0.7;
+    const strength = 0.5;
+    const radius = 0.7;
+    const threshold = 0.9;
     this.renderPass = new THREE.RenderPass(this.scene, this.camera);
     this.FXAAPass = new THREE.ShaderPass(THREE.FXAAShader);
 		this.FXAAPass.uniforms['resolution'].value.set(1 / this.width, 1 / this.height);
     this.bloomPass = new THREE.UnrealBloomPass(this.size, strength, radius, threshold);
     this.noisePass = new THREE.NoisePass();
     this.noisePass.renderToScreen = true;
-
-    // composer
     this.composer = new THREE.EffectComposer(this.renderer);
     this.composer.setSize(this.width, this.height);
     this.composer.addPass(this.renderPass);
