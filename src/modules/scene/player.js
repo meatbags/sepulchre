@@ -67,6 +67,9 @@ class Player {
       case ' ':
         this.keys.jump = this.keyboard.keys[key];
         break;
+      case 'x': case 'X':
+        this.keys.noclip = this.keyboard.keys[key];
+        break;
       default:
         break;
     }
@@ -97,10 +100,11 @@ class Player {
     }
 
     this.falling = (this.motion.y != 0);
-    this.fallTimer = (this.falling) ? this.fallTimer + delta : 0;
+    this.fallTime = (this.falling) ? this.fallTime + delta : 0;
 
     // noclip
-    if (this.keyboard.keys['x']) {
+    if (this.keys.noclip) {
+      this.keys.noclip = false;
       this.keyboard.release('x');
       this.noclip = (this.noclip == false);
     }

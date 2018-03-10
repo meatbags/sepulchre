@@ -1,27 +1,28 @@
 import { Camera } from './camera';
 import { Lighting } from './lighting';
 import { Player } from './player';
+import { Map } from './map';
 
 class Scene {
   constructor(domElement, width, height) {
     this.scene = new THREE.Scene();
-    this.colliderSystem = new Collider.System();
-    this.player = new Player(domElement, this.scene, this.colliderSystem);
+    this.collider = new Collider.System();
+    this.player = new Player(domElement, this.scene, this.collider);
     this.camera = new Camera(width, height, this.player.position, this.player.rotation);
     this.lighting = new Lighting(this.scene);
+    this.map = new Map(this.scene, this.collider);
 
     // test a scene
+    /*
     let floor = new THREE.Mesh(
       new THREE.BoxBufferGeometry(200, 1, 200),
       new THREE.MeshPhysicalMaterial({emissive: 0x222222, roughness:1})
     );
     this.scene.add(floor);
     this.colliderSystem.add(new Collider.Mesh(floor));
-
     const rand = (v) => { return Math.random() * v - v / 2; };
     var angle = 0;
     var len = 40;
-
     for (var i=0; i<1000; i++) {
       angle += 0.03;
       const x = Math.sin(angle) * len + rand(5);
@@ -41,6 +42,7 @@ class Scene {
       this.scene.add(box);
       this.colliderSystem.add(new Collider.Mesh(box));
     }
+    */
   }
 
   resize(width, height) {
