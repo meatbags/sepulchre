@@ -13,6 +13,13 @@ class Master {
     this.loop();
   }
 
+  resize() {
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    this.scene.resize(this.width, this.height);
+    this.renderer.resize(this.width, this.height);
+  }
+
   loop() {
     if (!this.paused) {
       if (!this.loopGuard) {

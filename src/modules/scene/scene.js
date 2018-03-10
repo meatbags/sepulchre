@@ -43,6 +43,10 @@ class Scene {
     }
   }
 
+  resize(width, height) {
+    this.camera.resize(width, height);
+  }
+
   update(delta) {
     this.player.update(delta);
     this.camera.update(delta);

@@ -76,9 +76,14 @@ var _modules = __webpack_require__(1);
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var App = function App() {
+  var _this = this;
+
   _classCallCheck(this, App);
 
   this.master = new _modules.Master();
+  window.onresize = function () {
+    _this.master.resize();
+  };
 };
 
 window.onload = function () {
@@ -144,6 +149,14 @@ var Master = function () {
   }
 
   _createClass(Master, [{
+    key: 'resize',
+    value: function resize() {
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
+      this.scene.resize(this.width, this.height);
+      this.renderer.resize(this.width, this.height);
+    }
+  }, {
     key: 'loop',
     value: function loop() {
       var _this = this;
@@ -1314,6 +1327,11 @@ var Scene = function () {
   }
 
   _createClass(Scene, [{
+    key: 'resize',
+    value: function resize(width, height) {
+      this.camera.resize(width, height);
+    }
+  }, {
     key: 'update',
     value: function update(delta) {
       this.player.update(delta);
@@ -1355,8 +1373,7 @@ var Camera = function () {
   function Camera(width, height, position, rotation) {
     _classCallCheck(this, Camera);
 
-    // perspective camera
-
+    // perspective camera which tracks player movement
     this.position = position;
     this.rotation = rotation;
     this.fov = 75;
@@ -1367,15 +1384,22 @@ var Camera = function () {
   }
 
   _createClass(Camera, [{
+    key: "resize",
+    value: function resize(width, height) {
+      this.aspectRatio = width / height;
+      this.camera.aspect = this.aspectRatio;
+      this.camera.updateProjectionMatrix();
+    }
+  }, {
     key: "update",
     value: function update(delta) {
-      var offxz = 1 - Math.abs(Math.sin(this.rotation.pitch));
-      var offy = 1;
-      var height = this.position.y + this.height;
+      var offsetXZ = 1 - Math.abs(Math.sin(this.rotation.pitch));
+      var offsetY = 1;
+      var y = this.position.y + this.height;
       this.camera.up.z = -Math.sin(this.rotation.yaw) * this.rotation.roll;
       this.camera.up.x = Math.cos(this.rotation.yaw) * this.rotation.roll;
-      this.camera.position.set(this.position.x - Math.sin(this.rotation.yaw) * offxz / 4, height - Math.sin(this.rotation.pitch) * offy / 4, this.position.z - Math.cos(this.rotation.yaw) * offxz / 4);
-      this.camera.lookAt(new THREE.Vector3(this.position.x + Math.sin(this.rotation.yaw) * offxz, this.position.y + this.height + Math.sin(this.rotation.pitch) * offy, this.position.z + Math.cos(this.rotation.yaw) * offxz));
+      this.camera.position.set(this.position.x - Math.sin(this.rotation.yaw) * offsetXZ / 4, y - Math.sin(this.rotation.pitch) * offsetY / 4, this.position.z - Math.cos(this.rotation.yaw) * offsetXZ / 4);
+      this.camera.lookAt(new THREE.Vector3(this.position.x + Math.sin(this.rotation.yaw) * offsetXZ, y + Math.sin(this.rotation.pitch) * offsetY, this.position.z + Math.cos(this.rotation.yaw) * offsetXZ));
     }
   }, {
     key: "getCamera",
