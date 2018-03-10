@@ -1511,14 +1511,14 @@ var Player = function () {
       _this.onKeyboard(key);
     });
     this.collider = new Collider.Collider(this.target.position, this.motion);
-    this.collider.setPhysics({ gravity: 19 });
+    this.collider.setPhysics({ gravity: 20 });
     this.colliderSystem = colliderSystem;
 
-    // physics attribs
+    // physics attribs, all time in seconds, speeds in m/s
     this.speed = 8;
-    this.jumpSpeedMultiplier = 0.5;
     this.rotationSpeed = Math.PI * 0.9;
-    this.jump = 10;
+    this.jump = 11;
+    this.jumpSpeedMultiplier = 0.25;
     this.falling = false;
     this.fallTime = 0;
     this.fallTimeThreshold = 0.2;
@@ -1586,9 +1586,6 @@ var Player = function () {
       }
 
       if (this.keys.jump) {
-        this.keys.jump = false;
-        this.keyboard.release(' ');
-
         if (this.motion.y == 0 || this.fallTime < this.fallTimeThreshold) {
           this.motion.y = this.jump;
           this.fallTime = this.fallTimeThreshold;
