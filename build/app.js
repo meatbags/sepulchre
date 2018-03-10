@@ -1516,7 +1516,7 @@ var Player = function () {
 
     // physics attribs, all time in seconds, speeds in m/s
     this.speed = 8;
-    this.rotationSpeed = Math.PI * 0.9;
+    this.rotationSpeed = Math.PI * 0.8;
     this.jump = 11;
     this.jumpSpeedMultiplier = 0.25;
     this.falling = false;
@@ -1527,10 +1527,10 @@ var Player = function () {
     this.minPitch = -Math.PI * 0.3;
     this.maxPitch = Math.PI * 0.3;
     this.adjust = {
-      slow: 0.025,
-      medium: 0.05,
-      fast: 0.1,
-      veryFast: 0.3
+      slow: 0.05,
+      normal: 0.1,
+      fast: 0.15,
+      maximum: 0.3
     };
 
     // set up
@@ -1647,11 +1647,11 @@ var Player = function () {
     value: function update(delta) {
       this.move(delta);
       this.collider.move(delta, this.colliderSystem);
-      this.position.x = (0, _maths.Blend)(this.position.x, this.target.position.x, this.adjust.veryFast);
-      this.position.y = (0, _maths.Blend)(this.position.y, this.target.position.y, this.adjust.veryFast);
-      this.position.z = (0, _maths.Blend)(this.position.z, this.target.position.z, this.adjust.veryFast);
+      this.position.x = (0, _maths.Blend)(this.position.x, this.target.position.x, this.adjust.maximum);
+      this.position.y = (0, _maths.Blend)(this.position.y, this.target.position.y, this.adjust.maximum);
+      this.position.z = (0, _maths.Blend)(this.position.z, this.target.position.z, this.adjust.maximum);
       this.rotation.yaw += (0, _maths.MinAngleBetween)(this.rotation.yaw, this.target.rotation.yaw) * this.adjust.fast;
-      this.rotation.pitch = (0, _maths.Blend)(this.rotation.pitch, this.target.rotation.pitch, this.adjust.medium);
+      this.rotation.pitch = (0, _maths.Blend)(this.rotation.pitch, this.target.rotation.pitch, this.adjust.slow);
       this.group.position.set(this.position.x, this.position.y, this.position.z);
     }
   }]);
