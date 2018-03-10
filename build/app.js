@@ -1572,7 +1572,8 @@ var Player = function () {
     value: function move(delta) {
       // key input to motion
       if (this.keys.left || this.keys.right) {
-        this.target.rotation.yaw += ((this.keys.left ? 1 : 0) + (this.keys.right ? -1 : 0)) * this.rotationSpeed * delta;
+        var d = (this.keys.left ? 1 : 0) + (this.keys.right ? -1 : 0);
+        this.target.rotation.yaw += d * this.rotationSpeed * delta;
       }
 
       if (this.keys.up || this.keys.down) {
@@ -1602,13 +1603,15 @@ var Player = function () {
       }
 
       if (this.noclip) {
+        this.falling = false;
+
         if (this.keys.up || this.keys.down) {
-          this.target.motion.y = Math.sin(this.target.rotation.pitch) * (this.keys.up ? 1 : 0) + (this.keys.down ? -1 : 0) * this.noclipSpeed;
+          var _d = (this.keys.up ? 1 : 0) + (this.keys.down ? -1 : 0);
+          this.target.motion.y = Math.sin(this.target.rotation.pitch) * _d * this.noclipSpeed;
         } else {
           this.target.motion.y = 0;
         }
 
-        this.falling = false;
         this.motion.y = this.target.motion.y;
       }
 
@@ -1646,7 +1649,13 @@ var Player = function () {
     key: 'update',
     value: function update(delta) {
       this.move(delta);
-      this.collider.move(delta, this.colliderSystem);
+      if (!this.noclip) {
+        this.collider.move(delta, this.colliderSystem);
+      } else {
+        this.target.position.x += this.motion.x * delta;
+        this.target.position.y += this.motion.y * delta;
+        this.target.position.z += this.motion.z * delta;
+      }
       this.position.x = (0, _maths.Blend)(this.position.x, this.target.position.x, this.adjust.maximum);
       this.position.y = (0, _maths.Blend)(this.position.y, this.target.position.y, this.adjust.maximum);
       this.position.z = (0, _maths.Blend)(this.position.z, this.target.position.z, this.adjust.maximum);
