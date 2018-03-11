@@ -32,8 +32,8 @@ class Renderer {
   postProcessingSetup() {
     // post processing passes
     const strength = 0.5;
-    const radius = 0.7;
-    const threshold = 0.9;
+    const radius = 0.5;
+    const threshold = 0.85;
     this.renderPass = new THREE.RenderPass(this.scene, this.camera);
     this.FXAAPass = new THREE.ShaderPass(THREE.FXAAShader);
 		this.FXAAPass.uniforms['resolution'].value.set(1 / this.width, 1 / this.height);

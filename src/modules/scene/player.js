@@ -1,11 +1,13 @@
-import { Mouse, Keyboard } from '../input';
+import { Keyboard, Mouse } from '../input';
 import { Blend, MinAngleBetween, TwoPI } from '../maths';
 
 class Player {
   constructor(domElement, scene, colliderSystem) {
     // handle player input
-    const y = 10;
+    this.scene = scene;
+    this.colliderSystem = colliderSystem;
     this.domElement = domElement;
+    var y = 10;
     this.position = new THREE.Vector3(0, y, 0);
     this.rotation = {pitch: 0, roll: 0, yaw: 0};
     this.motion = new THREE.Vector3();
@@ -14,11 +16,8 @@ class Player {
       rotation: {pitch: 0, roll: 0, yaw: 0},
       motion: new THREE.Vector3()
     };
-    this.keys = {};
-    this.keyboard = new Keyboard((key) => { this.onKeyboard(key); });
     this.collider = new Collider.Collider(this.target.position, this.motion);
     this.collider.setPhysics({gravity: 20});
-    this.colliderSystem = colliderSystem;
 
     // physics attribs, all time in seconds, speeds in m/s
     this.speed = 8;
@@ -39,15 +38,17 @@ class Player {
       maximum: 0.3
     };
 
-    // set up
-    this.initMouse();
+    // events
+    this.keys = {};
+    this.keyboard = new Keyboard((key) => { this.onKeyboard(key); });
+    this.hookMouse();
 
     // add to scene
     this.group = new THREE.Group();
     this.light = new THREE.PointLight(0xffffff, 0.1);
     this.light.position.y = 1;
     this.group.add(this.light);
-    scene.add(this.group);
+    this.scene.add(this.group);
   }
 
   onKeyboard(key) {
@@ -132,22 +133,23 @@ class Player {
     }
   }
 
-  initMouse() {
+  hookMouse() {
     // hook up mouse events
-    this.onMouseDown = (e) => {
+    this.onDown = (e) => {
       this.mouse.start(e, this.rotation.pitch, this.rotation.yaw);
     };
-    this.onMouseMove = (e) => {
+    this.onMove = (e) => {
       if (this.mouse.isActive() && !(this.keys.left || this.keys.right)) {
+        // click & drag
         this.mouse.move(e);
         this.target.rotation.yaw = this.mouse.getYaw();
         this.target.rotation.pitch = this.mouse.getPitch(this.minPitch, this.maxPitch);
       }
     };
-    this.onMouseUp = (e) => {
+    this.onUp = (e) => {
       this.mouse.stop();
     };
-    this.mouse = new Mouse(this.domElement, this.onMouseDown, this.onMouseMove, this.onMouseUp);
+    this.mouse = new Mouse(this.domElement, this.onDown, this.onMove, this.onUp);
   }
 
   update(delta) {

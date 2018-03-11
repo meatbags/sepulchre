@@ -7,6 +7,7 @@ class Mouse {
     this.delta = new THREE.Vector2(0, 0);
     this.rotation = {pitch: 0, yaw: 0, roll: 0};
     this.active = false;
+    this.timestamp = 0;
     this.domElement = domElement;
     this.domElement.addEventListener('mousedown', onDown, false);
     this.domElement.addEventListener('mousemove', onMove, false);
@@ -22,6 +23,7 @@ class Mouse {
     this.origin.y = ((e.clientY - bound.y) / bound.height) * 2 - 1;
     this.rotation.pitch = pitch;
     this.rotation.yaw = yaw;
+    this.timestamp = (new Date()).getTime();
   }
 
   stop() {
@@ -50,6 +52,10 @@ class Mouse {
 
   getYaw() {
     return this.rotation.yaw + this.delta.x;
+  }
+
+  getTimestamp() {
+    return this.timestamp;
   }
 
   isActive() {

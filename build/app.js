@@ -131,7 +131,7 @@ var _render = __webpack_require__(3);
 
 var _scene = __webpack_require__(17);
 
-var _time = __webpack_require__(27);
+var _time = __webpack_require__(36);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -259,8 +259,8 @@ var Renderer = function () {
     value: function postProcessingSetup() {
       // post processing passes
       var strength = 0.5;
-      var radius = 0.7;
-      var threshold = 0.9;
+      var radius = 0.5;
+      var threshold = 0.85;
       this.renderPass = new THREE.RenderPass(this.scene, this.camera);
       this.FXAAPass = new THREE.ShaderPass(THREE.FXAAShader);
       this.FXAAPass.uniforms['resolution'].value.set(1 / this.width, 1 / this.height);
@@ -1285,12 +1285,18 @@ var _lighting = __webpack_require__(20);
 
 var _player = __webpack_require__(21);
 
-var _map = __webpack_require__(29);
+var _map = __webpack_require__(27);
+
+var _raycaster = __webpack_require__(39);
+
+var _input = __webpack_require__(22);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Scene = function () {
   function Scene(domElement, width, height) {
+    var _this = this;
+
     _classCallCheck(this, Scene);
 
     this.scene = new THREE.Scene();
@@ -1299,50 +1305,49 @@ var Scene = function () {
     this.camera = new _camera.Camera(width, height, this.player.position, this.player.rotation);
     this.lighting = new _lighting.Lighting(this.scene);
     this.map = new _map.Map(this.scene, this.collider);
-
-    // test a scene
-    /*
-    let floor = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(200, 1, 200),
-      new THREE.MeshPhysicalMaterial({emissive: 0x222222, roughness:1})
-    );
-    this.scene.add(floor);
-    this.colliderSystem.add(new Collider.Mesh(floor));
-    const rand = (v) => { return Math.random() * v - v / 2; };
-    var angle = 0;
-    var len = 40;
-    for (var i=0; i<1000; i++) {
-      angle += 0.03;
-      const x = Math.sin(angle) * len + rand(5);
-      const y = i * 0.3 + rand(2);
-      const z = Math.cos(angle) * len + rand(10);
-      const s = 5 + 2 * Math.random();
-      const h = 3 + Math.random() * 5;
-      const box = new THREE.Mesh(
-        new THREE.BoxBufferGeometry(s, h, s),
-        new THREE.MeshPhysicalMaterial({roughness: 1})
-      );
-      box.position.set(x, y, z);
-      const rx = rand(Math.PI / 3);
-      const ry = rand(Math.PI / 3);
-      const rz = rand(Math.PI / 3);
-      box.rotation.set(rx, ry, rz);
-      this.scene.add(box);
-      this.colliderSystem.add(new Collider.Mesh(box));
-    }
-    */
+    this.raycaster = new _raycaster.Raycaster(domElement, this.camera.getCamera());
+    this.mouse = new _input.Mouse(domElement, function (e) {
+      _this.onMouseDown(e);
+    }, function (e) {
+      _this.onMouseMove(e);
+    }, function (e) {
+      _this.onMouseUp(e);
+    });
   }
 
   _createClass(Scene, [{
+    key: 'onMouseDown',
+    value: function onMouseDown(e) {
+      this.mouse.start(e, 0, 0);
+    }
+  }, {
+    key: 'onMouseMove',
+    value: function onMouseMove(e) {
+      if (!this.mouse.isActive()) {
+        this.map.activateObjects(this.raycaster.cast(e, this.map.getInteractive()));
+      }
+    }
+  }, {
+    key: 'onMouseUp',
+    value: function onMouseUp(e) {
+      var t = new Date().getTime();
+      this.mouse.stop();
+      if (t - this.mouse.getTimestamp() < 100) {
+        // do something?
+      }
+    }
+  }, {
     key: 'resize',
     value: function resize(width, height) {
       this.camera.resize(width, height);
+      this.raycaster.resize();
     }
   }, {
     key: 'update',
     value: function update(delta) {
       this.player.update(delta);
       this.camera.update(delta);
+      this.map.update(delta);
     }
   }, {
     key: 'getScene',
@@ -1503,8 +1508,10 @@ var Player = function () {
     _classCallCheck(this, Player);
 
     // handle player input
-    var y = 10;
+    this.scene = scene;
+    this.colliderSystem = colliderSystem;
     this.domElement = domElement;
+    var y = 10;
     this.position = new THREE.Vector3(0, y, 0);
     this.rotation = { pitch: 0, roll: 0, yaw: 0 };
     this.motion = new THREE.Vector3();
@@ -1513,13 +1520,8 @@ var Player = function () {
       rotation: { pitch: 0, roll: 0, yaw: 0 },
       motion: new THREE.Vector3()
     };
-    this.keys = {};
-    this.keyboard = new _input.Keyboard(function (key) {
-      _this.onKeyboard(key);
-    });
     this.collider = new Collider.Collider(this.target.position, this.motion);
     this.collider.setPhysics({ gravity: 20 });
-    this.colliderSystem = colliderSystem;
 
     // physics attribs, all time in seconds, speeds in m/s
     this.speed = 8;
@@ -1540,15 +1542,19 @@ var Player = function () {
       maximum: 0.3
     };
 
-    // set up
-    this.initMouse();
+    // events
+    this.keys = {};
+    this.keyboard = new _input.Keyboard(function (key) {
+      _this.onKeyboard(key);
+    });
+    this.hookMouse();
 
     // add to scene
     this.group = new THREE.Group();
     this.light = new THREE.PointLight(0xffffff, 0.1);
     this.light.position.y = 1;
     this.group.add(this.light);
-    scene.add(this.group);
+    this.scene.add(this.group);
   }
 
   _createClass(Player, [{
@@ -1636,25 +1642,26 @@ var Player = function () {
       }
     }
   }, {
-    key: 'initMouse',
-    value: function initMouse() {
+    key: 'hookMouse',
+    value: function hookMouse() {
       var _this2 = this;
 
       // hook up mouse events
-      this.onMouseDown = function (e) {
+      this.onDown = function (e) {
         _this2.mouse.start(e, _this2.rotation.pitch, _this2.rotation.yaw);
       };
-      this.onMouseMove = function (e) {
+      this.onMove = function (e) {
         if (_this2.mouse.isActive() && !(_this2.keys.left || _this2.keys.right)) {
+          // click & drag
           _this2.mouse.move(e);
           _this2.target.rotation.yaw = _this2.mouse.getYaw();
           _this2.target.rotation.pitch = _this2.mouse.getPitch(_this2.minPitch, _this2.maxPitch);
         }
       };
-      this.onMouseUp = function (e) {
+      this.onUp = function (e) {
         _this2.mouse.stop();
       };
-      this.mouse = new _input.Mouse(this.domElement, this.onMouseDown, this.onMouseMove, this.onMouseUp);
+      this.mouse = new _input.Mouse(this.domElement, this.onDown, this.onMove, this.onUp);
     }
   }, {
     key: 'update',
@@ -1822,6 +1829,7 @@ var Mouse = function () {
     this.delta = new THREE.Vector2(0, 0);
     this.rotation = { pitch: 0, yaw: 0, roll: 0 };
     this.active = false;
+    this.timestamp = 0;
     this.domElement = domElement;
     this.domElement.addEventListener('mousedown', onDown, false);
     this.domElement.addEventListener('mousemove', onMove, false);
@@ -1839,6 +1847,7 @@ var Mouse = function () {
       this.origin.y = (e.clientY - bound.y) / bound.height * 2 - 1;
       this.rotation.pitch = pitch;
       this.rotation.yaw = yaw;
+      this.timestamp = new Date().getTime();
     }
   }, {
     key: 'stop',
@@ -1871,6 +1880,11 @@ var Mouse = function () {
     key: 'getYaw',
     value: function getYaw() {
       return this.rotation.yaw + this.delta.x;
+    }
+  }, {
+    key: 'getTimestamp',
+    value: function getTimestamp() {
+      return this.timestamp;
     }
   }, {
     key: 'isActive',
@@ -1941,80 +1955,15 @@ exports.TwoPI = TwoPI;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _timer = __webpack_require__(28);
-
-Object.keys(_timer).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _timer[key];
-    }
-  });
-});
-
-/***/ }),
-/* 28 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Timer = function () {
-  function Timer() {
-    _classCallCheck(this, Timer);
-
-    // timekeeping
-
-    this.time = new Date().getTime();
-    this.age = 0;
-  }
-
-  _createClass(Timer, [{
-    key: "getDelta",
-    value: function getDelta() {
-      // update timer, get delta time
-
-      var now = new Date().getTime();
-      var delta = (now - this.time) / 1000.;
-      this.age += delta;
-      this.time = now;
-
-      return delta;
-    }
-  }]);
-
-  return Timer;
-}();
-
-exports.Timer = Timer;
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.Map = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _loader = __webpack_require__(30);
+var _loader = __webpack_require__(28);
 
-var _conf = __webpack_require__(32);
+var _conf = __webpack_require__(34);
+
+var _maths = __webpack_require__(25);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2025,6 +1974,7 @@ var Map = function () {
     // load map to scene
     this.scene = scene;
     this.collider = collider;
+    this.interactive = [];
     this.loader = new _loader.LoadOBJ('./assets/');
     this.loadScene();
   }
@@ -2034,16 +1984,18 @@ var Map = function () {
     value: function loadScene() {
       var _this = this;
 
-      this.floor = new THREE.Mesh(new THREE.BoxBufferGeometry(100, 2, 100), _conf.Materials.default);
+      this.floor = new THREE.Mesh(new THREE.BoxBufferGeometry(100, 2, 100), _conf.Materials.default.clone());
       this.scene.add(this.floor);
       this.collider.add(this.floor);
 
       for (var x = -50; x < 50; x += 8) {
         for (var z = -50; z < 50; z += 8) {
-          var box = new THREE.Mesh(new THREE.BoxBufferGeometry(3, 6, 3), _conf.Materials.default);
-          box.position.set(x, 0, z);
+          var h = 3 + Math.random() * 10;
+          var box = new THREE.Mesh(new THREE.BoxBufferGeometry(3, h, 3), _conf.Materials.default.clone());
+          box.position.set(x, h / 2 - 0.1, z);
           this.collider.add(box);
           this.scene.add(box);
+          this.interactive.push(box);
         }
       }
 
@@ -2056,6 +2008,42 @@ var Map = function () {
         console.warn('Load error:', err);
       });
     }
+  }, {
+    key: 'update',
+    value: function update(delta) {
+      var t = 0.25;
+
+      for (var i = 0, len = this.interactive.length; i < len; ++i) {
+        var box = this.interactive[i];
+        if (box.active) {
+          var c = (0, _maths.Blend)(box.material.emissive.r, 1, t);
+          box.material.emissive.r = c;
+          box.material.emissive.g = c;
+          box.material.emissive.b = c;
+        } else {
+          var _c = (0, _maths.Blend)(box.material.emissive.r, 0, t);
+          box.material.emissive.r = _c;
+          box.material.emissive.g = _c;
+          box.material.emissive.b = _c;
+        }
+      }
+    }
+  }, {
+    key: 'getInteractive',
+    value: function getInteractive() {
+      // get interactive objects
+      return this.interactive;
+    }
+  }, {
+    key: 'activateObjects',
+    value: function activateObjects(objects) {
+      for (var i = 0, len = this.interactive.length; i < len; ++i) {
+        this.interactive[i].active = false;
+      }
+      if (objects.length) {
+        objects[0].object.active = true;
+      }
+    }
   }]);
 
   return Map;
@@ -2064,7 +2052,7 @@ var Map = function () {
 exports.Map = Map;
 
 /***/ }),
-/* 30 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2074,7 +2062,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _load_obj = __webpack_require__(31);
+var _load_obj = __webpack_require__(29);
 
 Object.keys(_load_obj).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -2087,7 +2075,7 @@ Object.keys(_load_obj).forEach(function (key) {
 });
 
 /***/ }),
-/* 31 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2100,7 +2088,7 @@ exports.LoadOBJ = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-__webpack_require__(34);
+__webpack_require__(30);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2238,59 +2226,20 @@ var LoadOBJ = function () {
 exports.LoadOBJ = LoadOBJ;
 
 /***/ }),
-/* 32 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
+__webpack_require__(31);
 
-var _materials = __webpack_require__(33);
+__webpack_require__(32);
 
-Object.keys(_materials).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _materials[key];
-    }
-  });
-});
+__webpack_require__(33);
 
 /***/ }),
-/* 33 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-var Materials = {
-  default: new THREE.MeshPhysicalMaterial({ emissive: 0x111111, roughness: 1 })
-};
-
-exports.Materials = Materials;
-
-/***/ }),
-/* 34 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-__webpack_require__(35);
-
-__webpack_require__(36);
-
-__webpack_require__(37);
-
-/***/ }),
-/* 35 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5793,7 +5742,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })();
 
 /***/ }),
-/* 36 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6306,7 +6255,7 @@ THREE.MTLLoader.MaterialCreator.prototype = {
 };
 
 /***/ }),
-/* 37 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6905,6 +6854,163 @@ THREE.OBJLoader = function () {
 
 				return OBJLoader;
 }();
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _materials = __webpack_require__(35);
+
+Object.keys(_materials).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _materials[key];
+    }
+  });
+});
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var Materials = {
+  default: new THREE.MeshPhysicalMaterial({ emissive: 0, roughness: 1 })
+};
+
+exports.Materials = Materials;
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _timer = __webpack_require__(37);
+
+Object.keys(_timer).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _timer[key];
+    }
+  });
+});
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Timer = function () {
+  function Timer() {
+    _classCallCheck(this, Timer);
+
+    // timekeeping
+
+    this.time = new Date().getTime();
+    this.age = 0;
+  }
+
+  _createClass(Timer, [{
+    key: "getDelta",
+    value: function getDelta() {
+      // update timer, get delta time
+
+      var now = new Date().getTime();
+      var delta = (now - this.time) / 1000.;
+      this.age += delta;
+      this.time = now;
+
+      return delta;
+    }
+  }]);
+
+  return Timer;
+}();
+
+exports.Timer = Timer;
+
+/***/ }),
+/* 38 */,
+/* 39 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Raycaster = function () {
+  function Raycaster(domElement, camera) {
+    _classCallCheck(this, Raycaster);
+
+    this.domElement = domElement;
+    this.camera = camera;
+    this.raycaster = new THREE.Raycaster();
+    this.raycaster.far = 30;
+    this.mouse = new THREE.Vector2();
+    this.rect = this.domElement.getBoundingClientRect();
+  }
+
+  _createClass(Raycaster, [{
+    key: "resize",
+    value: function resize() {
+      this.rect = this.domElement.getBoundingClientRect();
+    }
+  }, {
+    key: "cast",
+    value: function cast(e, objects) {
+      // cast from mouse, intersect objects
+      var x = e.clientX;
+      var y = e.clientY;
+      this.mouse.x = (x - this.rect.left) / this.rect.width * 2 - 1;
+      this.mouse.y = -((y - this.rect.top) / this.rect.height * 2 - 1);
+      this.raycaster.setFromCamera(this.mouse, this.camera);
+      return this.raycaster.intersectObjects(objects);
+    }
+  }]);
+
+  return Raycaster;
+}();
+
+exports.Raycaster = Raycaster;
 
 /***/ })
 /******/ ]);
