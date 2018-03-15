@@ -29,8 +29,8 @@ class Player {
     this.fallTimeThreshold = 0.2;
     this.noclip = false;
     this.noclipSpeed = 30;
-    this.minPitch = -Math.PI * 0.3;
-    this.maxPitch = Math.PI * 0.3;
+    this.minPitch = -Math.PI * 0.15;
+    this.maxPitch = Math.PI * 0.15;
     this.adjust = {
       slow: 0.05,
       normal: 0.1,

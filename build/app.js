@@ -61,7 +61,7 @@ var stk =
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71,7 +71,65 @@ var stk =
 "use strict";
 
 
-var _modules = __webpack_require__(1);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _keyboard = __webpack_require__(24);
+
+Object.keys(_keyboard).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _keyboard[key];
+    }
+  });
+});
+
+var _mouse = __webpack_require__(25);
+
+Object.keys(_mouse).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _mouse[key];
+    }
+  });
+});
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _general = __webpack_require__(26);
+
+Object.keys(_general).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _general[key];
+    }
+  });
+});
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _modules = __webpack_require__(3);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -91,97 +149,6 @@ window.onload = function () {
 };
 
 /***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _master = __webpack_require__(2);
-
-Object.keys(_master).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _master[key];
-    }
-  });
-});
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Master = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _render = __webpack_require__(3);
-
-var _scene = __webpack_require__(17);
-
-var _time = __webpack_require__(36);
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Master = function () {
-  function Master() {
-    _classCallCheck(this, Master);
-
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
-    this.domElement = document.getElementsByClassName('content')[0];
-    this.scene = new _scene.Scene(this.domElement, this.width, this.height);
-    this.renderer = new _render.Renderer(this.domElement, this.width, this.height, this.scene.getScene(), this.scene.getCamera());
-    this.timer = new _time.Timer();
-    this.loop();
-  }
-
-  _createClass(Master, [{
-    key: 'resize',
-    value: function resize() {
-      this.width = window.innerWidth;
-      this.height = window.innerHeight;
-      this.scene.resize(this.width, this.height);
-      this.renderer.resize(this.width, this.height);
-    }
-  }, {
-    key: 'loop',
-    value: function loop() {
-      var _this = this;
-
-      if (!this.paused) {
-        if (!this.loopGuard) {
-          this.loopGuard = true;
-          requestAnimationFrame(function () {
-            _this.loopGuard = false;
-            _this.loop();
-          });
-        }
-        var delta = this.timer.getDelta();
-        this.scene.update(delta);
-        this.renderer.render(delta);
-      }
-    }
-  }]);
-
-  return Master;
-}();
-
-exports.Master = Master;
-
-/***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -192,14 +159,14 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _renderer = __webpack_require__(4);
+var _master = __webpack_require__(4);
 
-Object.keys(_renderer).forEach(function (key) {
+Object.keys(_master).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {
-      return _renderer[key];
+      return _master[key];
     }
   });
 });
@@ -214,11 +181,120 @@ Object.keys(_renderer).forEach(function (key) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.Master = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _render = __webpack_require__(5);
+
+var _scene = __webpack_require__(19);
+
+var _time = __webpack_require__(37);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Master = function () {
+  function Master() {
+    _classCallCheck(this, Master);
+
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    this.domElement = document.getElementsByClassName('content')[0];
+    this.scene = new _scene.Scene(this.domElement, this.width, this.height);
+    this.renderer = new _render.Renderer(this.domElement, this.width, this.height, this.scene.getScene(), this.scene.getCamera());
+    this.renderer2d = new _render.Renderer2d(this.domElement, this.width, this.height, this.scene.getCamera());
+    this.timer = new _time.Timer();
+    this.loop();
+  }
+
+  _createClass(Master, [{
+    key: 'resize',
+    value: function resize() {
+      // resize from window
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
+      this.scene.resize(this.width, this.height);
+      this.renderer.resize(this.width, this.height);
+      this.renderer;
+    }
+  }, {
+    key: 'loop',
+    value: function loop() {
+      var _this = this;
+
+      // main game loop
+      if (!this.paused) {
+        if (!this.loopGuard) {
+          // restrict async looping
+          this.loopGuard = true;
+          requestAnimationFrame(function () {
+            _this.loopGuard = false;
+            _this.loop();
+          });
+        }
+        var delta = this.timer.getDelta();
+        this.scene.update(delta);
+        this.renderer.render(delta);
+        this.renderer2d.render(delta, this.scene.getObjects2d());
+      }
+    }
+  }]);
+
+  return Master;
+}();
+
+exports.Master = Master;
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _renderer = __webpack_require__(6);
+
+Object.keys(_renderer).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _renderer[key];
+    }
+  });
+});
+
+var _renderer_2d = __webpack_require__(39);
+
+Object.keys(_renderer_2d).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _renderer_2d[key];
+    }
+  });
+});
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports.Renderer = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-__webpack_require__(5);
+__webpack_require__(7);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -289,15 +365,11 @@ var Renderer = function () {
 exports.Renderer = Renderer;
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-
-__webpack_require__(6);
-
-__webpack_require__(7);
 
 __webpack_require__(8);
 
@@ -317,8 +389,12 @@ __webpack_require__(15);
 
 __webpack_require__(16);
 
+__webpack_require__(17);
+
+__webpack_require__(18);
+
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -346,7 +422,7 @@ THREE.CopyShader = {
 };
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -524,7 +600,7 @@ Object.assign(THREE.Pass.prototype, {
 });
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -556,7 +632,7 @@ THREE.FXAAShader = {
 };
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -590,7 +666,7 @@ THREE.LuminosityHighPassShader = {
 };
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -605,7 +681,7 @@ window.mobilecheck = function () {
 };
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -672,7 +748,7 @@ THREE.RenderPass.prototype = Object.assign(Object.create(THREE.Pass.prototype), 
 });
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -740,7 +816,7 @@ THREE.ShaderPass.prototype = Object.assign(Object.create(THREE.Pass.prototype), 
 });
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1106,7 +1182,7 @@ THREE.UnrealBloomPass.BlurDirectionX = new THREE.Vector2(1.0, 0.0);
 THREE.UnrealBloomPass.BlurDirectionY = new THREE.Vector2(0.0, 1.0);
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1173,7 +1249,7 @@ THREE.MechanicsPass.prototype = Object.assign(Object.create(THREE.Pass.prototype
 });
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1226,7 +1302,7 @@ THREE.NoisePass.prototype = Object.assign(Object.create(THREE.Pass.prototype), {
 });
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1243,7 +1319,7 @@ THREE.DepthShader = {
 };
 
 /***/ }),
-/* 17 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1253,7 +1329,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _scene = __webpack_require__(18);
+var _scene = __webpack_require__(20);
 
 Object.keys(_scene).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -1266,7 +1342,7 @@ Object.keys(_scene).forEach(function (key) {
 });
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1279,17 +1355,17 @@ exports.Scene = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _camera = __webpack_require__(19);
+var _camera = __webpack_require__(21);
 
-var _lighting = __webpack_require__(20);
+var _lighting = __webpack_require__(22);
 
-var _player = __webpack_require__(21);
+var _player = __webpack_require__(23);
 
 var _map = __webpack_require__(27);
 
-var _raycaster = __webpack_require__(39);
+var _raycaster = __webpack_require__(36);
 
-var _input = __webpack_require__(22);
+var _input = __webpack_require__(0);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -1304,10 +1380,10 @@ var Scene = function () {
     this.player = new _player.Player(domElement, this.scene, this.collider);
     this.camera = new _camera.Camera(width, height, this.player.position, this.player.rotation);
     this.lighting = new _lighting.Lighting(this.scene);
-    this.map = new _map.Map(this.scene, this.collider);
+    this.map = new _map.Map(this.scene, this.collider, this.camera.getCamera(), width, height);
     this.raycaster = new _raycaster.Raycaster(domElement, this.camera.getCamera());
     this.mouse = new _input.Mouse(domElement, function (e) {
-      _this.onMouseDown(e);
+      _this.mouse.start(e);
     }, function (e) {
       _this.onMouseMove(e);
     }, function (e) {
@@ -1316,9 +1392,9 @@ var Scene = function () {
   }
 
   _createClass(Scene, [{
-    key: 'onMouseDown',
-    value: function onMouseDown(e) {
-      this.mouse.start(e, 0, 0);
+    key: 'getObjects2d',
+    value: function getObjects2d() {
+      return this.map.getObjects2d();
     }
   }, {
     key: 'onMouseMove',
@@ -1333,13 +1409,14 @@ var Scene = function () {
       var t = new Date().getTime();
       this.mouse.stop();
       if (t - this.mouse.getTimestamp() < 100) {
-        // do something?
+        // do something
       }
     }
   }, {
     key: 'resize',
     value: function resize(width, height) {
       this.camera.resize(width, height);
+      this.map.resize(width, height);
       this.raycaster.resize();
     }
   }, {
@@ -1367,7 +1444,7 @@ var Scene = function () {
 exports.Scene = Scene;
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1390,6 +1467,7 @@ var Camera = function () {
     this.rotation = rotation;
     this.fov = 75;
     this.aspectRatio = width / height;
+    this.offset = 0.1;
     this.height = 2;
     this.camera = new THREE.PerspectiveCamera(this.fov, this.aspectRatio, 0.1, 1000);
     this.camera.up = new THREE.Vector3(0, 1, 0);
@@ -1405,8 +1483,8 @@ var Camera = function () {
   }, {
     key: "update",
     value: function update(delta) {
-      var offsetXZ = 1 - Math.abs(Math.sin(this.rotation.pitch));
-      var offsetY = 1;
+      var offsetXZ = this.offset - this.offset * Math.abs(Math.sin(this.rotation.pitch));
+      var offsetY = this.offset;
       var y = this.position.y + this.height;
       this.camera.up.z = -Math.sin(this.rotation.yaw) * this.rotation.roll;
       this.camera.up.x = Math.cos(this.rotation.yaw) * this.rotation.roll;
@@ -1426,7 +1504,7 @@ var Camera = function () {
 exports.Camera = Camera;
 
 /***/ }),
-/* 20 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1482,7 +1560,7 @@ var Lighting = function () {
 exports.Lighting = Lighting;
 
 /***/ }),
-/* 21 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1495,9 +1573,9 @@ exports.Player = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _input = __webpack_require__(22);
+var _input = __webpack_require__(0);
 
-var _maths = __webpack_require__(25);
+var _maths = __webpack_require__(1);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -1533,8 +1611,8 @@ var Player = function () {
     this.fallTimeThreshold = 0.2;
     this.noclip = false;
     this.noclipSpeed = 30;
-    this.minPitch = -Math.PI * 0.3;
-    this.maxPitch = Math.PI * 0.3;
+    this.minPitch = -Math.PI * 0.15;
+    this.maxPitch = Math.PI * 0.15;
     this.adjust = {
       slow: 0.05,
       normal: 0.1,
@@ -1691,42 +1769,7 @@ var Player = function () {
 exports.Player = Player;
 
 /***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _keyboard = __webpack_require__(23);
-
-Object.keys(_keyboard).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _keyboard[key];
-    }
-  });
-});
-
-var _mouse = __webpack_require__(24);
-
-Object.keys(_mouse).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _mouse[key];
-    }
-  });
-});
-
-/***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1804,7 +1847,7 @@ var Keyboard = function () {
 exports.Keyboard = Keyboard;
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1845,8 +1888,8 @@ var Mouse = function () {
       var bound = this.domElement.getBoundingClientRect();
       this.origin.x = (e.clientX - bound.x) / bound.width * 2 - 1;
       this.origin.y = (e.clientY - bound.y) / bound.height * 2 - 1;
-      this.rotation.pitch = pitch;
-      this.rotation.yaw = yaw;
+      this.rotation.pitch = pitch || 0;
+      this.rotation.yaw = yaw || 0;
       this.timestamp = new Date().getTime();
     }
   }, {
@@ -1899,29 +1942,6 @@ var Mouse = function () {
 exports.Mouse = Mouse;
 
 /***/ }),
-/* 25 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _general = __webpack_require__(26);
-
-Object.keys(_general).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _general[key];
-    }
-  });
-});
-
-/***/ }),
 /* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1939,10 +1959,15 @@ var MinAngleBetween = function MinAngleBetween(a1, a2) {
   return Math.atan2(Math.sin(a2 - a1), Math.cos(a2 - a1));
 };
 
+var Rand = function Rand(n) {
+  return Math.random() * n - n / 2;
+};
+
 var TwoPI = Math.PI * 2;
 
 exports.Blend = Blend;
 exports.MinAngleBetween = MinAngleBetween;
+exports.Rand = Rand;
 exports.TwoPI = TwoPI;
 
 /***/ }),
@@ -1963,17 +1988,23 @@ var _loader = __webpack_require__(28);
 
 var _conf = __webpack_require__(34);
 
-var _maths = __webpack_require__(25);
+var _maths = __webpack_require__(1);
+
+var _text_node = __webpack_require__(40);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Map = function () {
-  function Map(scene, collider) {
+  function Map(scene, collider, camera, width, height) {
     _classCallCheck(this, Map);
 
     // load map to scene
     this.scene = scene;
     this.collider = collider;
+    this.camera = camera;
+    this.cameraWorldDirection = new THREE.Vector3();
+    this.centreX = width / 2;
+    this.centreY = height / 2;
     this.interactive = [];
     this.loader = new _loader.LoadOBJ('./assets/');
     this.loadScene();
@@ -1988,9 +2019,10 @@ var Map = function () {
       this.scene.add(this.floor);
       this.collider.add(this.floor);
 
+      // test grid
       for (var x = -50; x < 50; x += 8) {
         for (var z = -50; z < 50; z += 8) {
-          var h = 3 + Math.random() * 10;
+          var h = 1 + Math.random() * 2;
           var box = new THREE.Mesh(new THREE.BoxBufferGeometry(3, h, 3), _conf.Materials.default.clone());
           box.position.set(x, h / 2 - 0.1, z);
           this.collider.add(box);
@@ -1999,6 +2031,7 @@ var Map = function () {
         }
       }
 
+      // test model load
       this.loader.load('blob').then(function (map) {
         _this.scene.add(map);
         map.children.forEach(function (child) {
@@ -2007,11 +2040,24 @@ var Map = function () {
       }, function (err) {
         console.warn('Load error:', err);
       });
+
+      // test text nodes
+      this.textNodes = [];
+      for (var i = 0; i < 40; ++i) {
+        var textNode = new _text_node.TextNode('Hello world.', (0, _maths.Rand)(100), 6 + (0, _maths.Rand)(10), (0, _maths.Rand)(100));
+        this.textNodes.push(textNode);
+        this.scene.add(textNode.mesh);
+      }
     }
   }, {
     key: 'update',
     value: function update(delta) {
       var t = 0.25;
+
+      this.camera.getWorldDirection(this.cameraWorldDirection);
+      for (var i = 0, len = this.textNodes.length; i < len; ++i) {
+        this.textNodes[i].update(delta, this.camera, this.cameraWorldDirection, this.centreX, this.centreY);
+      }
 
       for (var i = 0, len = this.interactive.length; i < len; ++i) {
         var box = this.interactive[i];
@@ -2027,6 +2073,17 @@ var Map = function () {
           box.material.emissive.b = _c;
         }
       }
+    }
+  }, {
+    key: 'resize',
+    value: function resize(width, height) {
+      this.centreX = width / 2;
+      this.centreY = height / 2;
+    }
+  }, {
+    key: 'getObjects2d',
+    value: function getObjects2d() {
+      return this.textNodes;
     }
   }, {
     key: 'getInteractive',
@@ -6905,7 +6962,55 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _timer = __webpack_require__(37);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Raycaster = function () {
+  function Raycaster(domElement, camera) {
+    _classCallCheck(this, Raycaster);
+
+    this.domElement = domElement;
+    this.camera = camera;
+    this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
+    this.rect = this.domElement.getBoundingClientRect();
+  }
+
+  _createClass(Raycaster, [{
+    key: "resize",
+    value: function resize() {
+      // resize from doc target
+      this.rect = this.domElement.getBoundingClientRect();
+    }
+  }, {
+    key: "cast",
+    value: function cast(e, objects) {
+      // cast from mouse, intersect objects
+      this.mouse.x = (e.clientX - this.rect.left) / this.rect.width * 2 - 1;
+      this.mouse.y = -((e.clientY - this.rect.top) / this.rect.height * 2 - 1);
+      this.raycaster.setFromCamera(this.mouse, this.camera);
+      return this.raycaster.intersectObjects(objects);
+    }
+  }]);
+
+  return Raycaster;
+}();
+
+exports.Raycaster = Raycaster;
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _timer = __webpack_require__(38);
 
 Object.keys(_timer).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -6918,7 +7023,7 @@ Object.keys(_timer).forEach(function (key) {
 });
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6962,7 +7067,6 @@ var Timer = function () {
 exports.Timer = Timer;
 
 /***/ }),
-/* 38 */,
 /* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6977,40 +7081,108 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Raycaster = function () {
-  function Raycaster(domElement, camera) {
-    _classCallCheck(this, Raycaster);
+var Renderer2d = function () {
+  function Renderer2d(domElement, width, height, camera) {
+    _classCallCheck(this, Renderer2d);
 
-    this.domElement = domElement;
+    // 2d canvas overlay
+    this.cvs = document.createElement('canvas');
+    this.ctx = this.cvs.getContext('2d');
+    this.cvs.width = width;
+    this.cvs.height = height;
+    this.ctx.font = '20px Playfair Display';
     this.camera = camera;
-    this.raycaster = new THREE.Raycaster();
-    this.raycaster.far = 30;
-    this.mouse = new THREE.Vector2();
-    this.rect = this.domElement.getBoundingClientRect();
+
+    // add to doc
+    domElement.append(this.cvs);
   }
 
-  _createClass(Raycaster, [{
-    key: "resize",
-    value: function resize() {
-      this.rect = this.domElement.getBoundingClientRect();
+  _createClass(Renderer2d, [{
+    key: 'clear',
+    value: function clear() {
+      this.ctx.clearRect(0, 0, this.cvs.width, this.cvs.height);
     }
   }, {
-    key: "cast",
-    value: function cast(e, objects) {
-      // cast from mouse, intersect objects
-      var x = e.clientX;
-      var y = e.clientY;
-      this.mouse.x = (x - this.rect.left) / this.rect.width * 2 - 1;
-      this.mouse.y = -((y - this.rect.top) / this.rect.height * 2 - 1);
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      return this.raycaster.intersectObjects(objects);
+    key: 'resize',
+    value: function resize(width, height) {
+      this.cvs.width = width;
+      this.cvs.height = height;
+    }
+  }, {
+    key: 'render',
+    value: function render(delta, objects) {
+      this.clear();
+      for (var i = 0, len = objects.length; i < len; ++i) {
+        objects[i].draw(this.ctx);
+      }
+      this.ctx.fillRect(0, 0, 20, 20);
     }
   }]);
 
-  return Raycaster;
+  return Renderer2d;
 }();
 
-exports.Raycaster = Raycaster;
+exports.Renderer2d = Renderer2d;
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var TextNode = function () {
+  function TextNode(text, x, y, z) {
+    _classCallCheck(this, TextNode);
+
+    this.text = text;
+    this.position = new THREE.Vector3(x, y, z);
+    this.position2d = new THREE.Vector2();
+    this.target = new THREE.Vector3();
+    this.mesh = new THREE.Mesh(new THREE.SphereBufferGeometry(0.1, 12, 12), new THREE.MeshPhysicalMaterial({ emissive: 0xffffff }));
+    this.mesh.position.set(x, y, z);
+  }
+
+  _createClass(TextNode, [{
+    key: "update",
+    value: function update(delta, camera, worldDirection, centreX, centreY) {
+      // project perspective camera to screen
+      this.target.copy(camera.position);
+      this.target.sub(this.position);
+      this.target.normalize();
+
+      if (this.target.dot(worldDirection) <= 0) {
+        this.behindCamera = false;
+        this.target.copy(this.position);
+        this.target.project(camera);
+        this.position2d.x = (this.target.x + 1) * centreX;
+        this.position2d.y = (-this.target.y + 1) * centreY;
+      } else {
+        this.behindCamera = true;
+      }
+    }
+  }, {
+    key: "draw",
+    value: function draw(ctx) {
+      // project text onto screen
+      if (!this.behindCamera) {
+        ctx.fillText(this.text, this.position2d.x, this.position2d.y);
+      }
+    }
+  }]);
+
+  return TextNode;
+}();
+
+exports.TextNode = TextNode;
 
 /***/ })
 /******/ ]);

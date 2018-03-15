@@ -21,8 +21,8 @@ class Mouse {
     const bound = this.domElement.getBoundingClientRect();
     this.origin.x = ((e.clientX - bound.x) / bound.width) * 2 - 1;
     this.origin.y = ((e.clientY - bound.y) / bound.height) * 2 - 1;
-    this.rotation.pitch = pitch;
-    this.rotation.yaw = yaw;
+    this.rotation.pitch = pitch || 0;
+    this.rotation.yaw = yaw || 0;
     this.timestamp = (new Date()).getTime();
   }
 

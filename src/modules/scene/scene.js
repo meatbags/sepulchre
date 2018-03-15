@@ -12,13 +12,13 @@ class Scene {
     this.player = new Player(domElement, this.scene, this.collider);
     this.camera = new Camera(width, height, this.player.position, this.player.rotation);
     this.lighting = new Lighting(this.scene);
-    this.map = new Map(this.scene, this.collider);
+    this.map = new Map(this.scene, this.collider, this.camera.getCamera(), width, height);
     this.raycaster = new Raycaster(domElement, this.camera.getCamera());
-    this.mouse = new Mouse(domElement, (e) => { this.onMouseDown(e); }, (e) => { this.onMouseMove(e); }, (e) => { this.onMouseUp(e); });
+    this.mouse = new Mouse(domElement, (e) => { this.mouse.start(e); }, (e) => { this.onMouseMove(e); }, (e) => { this.onMouseUp(e); });
   }
 
-  onMouseDown(e) {
-    this.mouse.start(e, 0, 0);
+  getObjects2d() {
+    return this.map.getObjects2d();
   }
 
   onMouseMove(e) {
@@ -33,12 +33,13 @@ class Scene {
     const t = (new Date()).getTime();
     this.mouse.stop();
     if (t - this.mouse.getTimestamp() < 100) {
-      // do something?
+      // do something
     }
   }
 
   resize(width, height) {
     this.camera.resize(width, height);
+    this.map.resize(width, height);
     this.raycaster.resize();
   }
 
