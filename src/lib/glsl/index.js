@@ -11,3 +11,4 @@ import './UnrealBloomPass';
 import './mechanics';
 import './noise';
 import './depth';
+import './poster';

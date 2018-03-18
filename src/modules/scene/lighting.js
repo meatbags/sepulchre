@@ -26,7 +26,7 @@ class Lighting {
   }
 
   setLightPositions() {
-    this.lights.point.a.position.set(0, 5, 0);
+    this.lights.point.a.position.set(10, 10, 10);
   }
 }
 

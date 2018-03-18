@@ -8,6 +8,7 @@ import { Mouse } from '../input';
 class Scene {
   constructor(domElement, width, height) {
     this.scene = new THREE.Scene();
+    this.scene.fog = new THREE.FogExp2(0x444444, 0.02);
     this.collider = new Collider.System();
     this.player = new Player(domElement, this.scene, this.collider);
     this.camera = new Camera(width, height, this.player.position, this.player.rotation);

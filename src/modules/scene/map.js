@@ -36,7 +36,16 @@ class Map {
 
     // test model load
     this.loader.load('blob').then((map) => {
-      this.scene.add(map);
+      for (var x=-100; x<101; x+=25) {
+        for (var z=-100; z<101; z+=25) {
+          const clone = map.clone();
+          clone.position.x = x;
+          clone.position.z = z;
+          this.scene.add(clone);
+        }
+      }
+      //this.scene.add(map);
+
       map.children.forEach((child) => {
         this.collider.add(new Collider.Mesh(child));
       });

@@ -75,7 +75,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _keyboard = __webpack_require__(24);
+var _keyboard = __webpack_require__(25);
 
 Object.keys(_keyboard).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -87,7 +87,7 @@ Object.keys(_keyboard).forEach(function (key) {
   });
 });
 
-var _mouse = __webpack_require__(25);
+var _mouse = __webpack_require__(26);
 
 Object.keys(_mouse).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -110,7 +110,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _general = __webpack_require__(26);
+var _general = __webpack_require__(27);
 
 Object.keys(_general).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -187,9 +187,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _render = __webpack_require__(5);
 
-var _scene = __webpack_require__(19);
+var _scene = __webpack_require__(20);
 
-var _time = __webpack_require__(37);
+var _time = __webpack_require__(39);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -268,7 +268,7 @@ Object.keys(_renderer).forEach(function (key) {
   });
 });
 
-var _renderer_2d = __webpack_require__(39);
+var _renderer_2d = __webpack_require__(19);
 
 Object.keys(_renderer_2d).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -341,6 +341,7 @@ var Renderer = function () {
       this.FXAAPass = new THREE.ShaderPass(THREE.FXAAShader);
       this.FXAAPass.uniforms['resolution'].value.set(1 / this.width, 1 / this.height);
       this.bloomPass = new THREE.UnrealBloomPass(this.size, strength, radius, threshold);
+      this.posterPass = new THREE.PosterPass(this.size);
       this.noisePass = new THREE.NoisePass();
       this.noisePass.renderToScreen = true;
       this.composer = new THREE.EffectComposer(this.renderer);
@@ -348,6 +349,7 @@ var Renderer = function () {
       this.composer.addPass(this.renderPass);
       this.composer.addPass(this.FXAAPass);
       this.composer.addPass(this.bloomPass);
+      this.composer.addPass(this.posterPass);
       this.composer.addPass(this.noisePass);
       this.renderer.gammaInput = true;
       this.renderer.gammaOutput = true;
@@ -392,6 +394,8 @@ __webpack_require__(16);
 __webpack_require__(17);
 
 __webpack_require__(18);
+
+__webpack_require__(41);
 
 /***/ }),
 /* 8 */
@@ -1329,7 +1333,65 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _scene = __webpack_require__(20);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Renderer2d = function () {
+  function Renderer2d(domElement, width, height, camera) {
+    _classCallCheck(this, Renderer2d);
+
+    // 2d canvas overlay
+    this.cvs = document.createElement('canvas');
+    this.ctx = this.cvs.getContext('2d');
+    this.cvs.width = width;
+    this.cvs.height = height;
+    this.ctx.font = '20px Playfair Display';
+    this.camera = camera;
+
+    // add to doc
+    domElement.append(this.cvs);
+  }
+
+  _createClass(Renderer2d, [{
+    key: 'clear',
+    value: function clear() {
+      this.ctx.clearRect(0, 0, this.cvs.width, this.cvs.height);
+    }
+  }, {
+    key: 'resize',
+    value: function resize(width, height) {
+      this.cvs.width = width;
+      this.cvs.height = height;
+    }
+  }, {
+    key: 'render',
+    value: function render(delta, objects) {
+      this.clear();
+      for (var i = 0, len = objects.length; i < len; ++i) {
+        objects[i].draw(this.ctx);
+      }
+      this.ctx.fillRect(0, 0, 20, 20);
+    }
+  }]);
+
+  return Renderer2d;
+}();
+
+exports.Renderer2d = Renderer2d;
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _scene = __webpack_require__(21);
 
 Object.keys(_scene).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -1342,7 +1404,7 @@ Object.keys(_scene).forEach(function (key) {
 });
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1355,15 +1417,15 @@ exports.Scene = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _camera = __webpack_require__(21);
+var _camera = __webpack_require__(22);
 
-var _lighting = __webpack_require__(22);
+var _lighting = __webpack_require__(23);
 
-var _player = __webpack_require__(23);
+var _player = __webpack_require__(24);
 
-var _map = __webpack_require__(27);
+var _map = __webpack_require__(28);
 
-var _raycaster = __webpack_require__(36);
+var _raycaster = __webpack_require__(38);
 
 var _input = __webpack_require__(0);
 
@@ -1376,6 +1438,7 @@ var Scene = function () {
     _classCallCheck(this, Scene);
 
     this.scene = new THREE.Scene();
+    this.scene.fog = new THREE.FogExp2(0x444444, 0.02);
     this.collider = new Collider.System();
     this.player = new _player.Player(domElement, this.scene, this.collider);
     this.camera = new _camera.Camera(width, height, this.player.position, this.player.rotation);
@@ -1444,7 +1507,7 @@ var Scene = function () {
 exports.Scene = Scene;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1504,7 +1567,7 @@ var Camera = function () {
 exports.Camera = Camera;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1550,7 +1613,7 @@ var Lighting = function () {
   _createClass(Lighting, [{
     key: "setLightPositions",
     value: function setLightPositions() {
-      this.lights.point.a.position.set(0, 5, 0);
+      this.lights.point.a.position.set(10, 10, 10);
     }
   }]);
 
@@ -1560,7 +1623,7 @@ var Lighting = function () {
 exports.Lighting = Lighting;
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1769,7 +1832,7 @@ var Player = function () {
 exports.Player = Player;
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1847,7 +1910,7 @@ var Keyboard = function () {
 exports.Keyboard = Keyboard;
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1942,7 +2005,7 @@ var Mouse = function () {
 exports.Mouse = Mouse;
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1971,7 +2034,7 @@ exports.Rand = Rand;
 exports.TwoPI = TwoPI;
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1984,13 +2047,13 @@ exports.Map = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _loader = __webpack_require__(28);
+var _loader = __webpack_require__(29);
 
-var _conf = __webpack_require__(34);
+var _conf = __webpack_require__(35);
 
 var _maths = __webpack_require__(1);
 
-var _text_node = __webpack_require__(40);
+var _text_node = __webpack_require__(37);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2033,7 +2096,16 @@ var Map = function () {
 
       // test model load
       this.loader.load('blob').then(function (map) {
-        _this.scene.add(map);
+        for (var x = -100; x < 101; x += 25) {
+          for (var z = -100; z < 101; z += 25) {
+            var clone = map.clone();
+            clone.position.x = x;
+            clone.position.z = z;
+            _this.scene.add(clone);
+          }
+        }
+        //this.scene.add(map);
+
         map.children.forEach(function (child) {
           _this.collider.add(new Collider.Mesh(child));
         });
@@ -2109,7 +2181,7 @@ var Map = function () {
 exports.Map = Map;
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2119,7 +2191,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _load_obj = __webpack_require__(29);
+var _load_obj = __webpack_require__(30);
 
 Object.keys(_load_obj).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -2132,7 +2204,7 @@ Object.keys(_load_obj).forEach(function (key) {
 });
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2145,7 +2217,7 @@ exports.LoadOBJ = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-__webpack_require__(30);
+__webpack_require__(31);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2283,20 +2355,20 @@ var LoadOBJ = function () {
 exports.LoadOBJ = LoadOBJ;
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(31);
-
 __webpack_require__(32);
 
 __webpack_require__(33);
 
+__webpack_require__(34);
+
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5799,7 +5871,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })();
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6312,7 +6384,7 @@ THREE.MTLLoader.MaterialCreator.prototype = {
 };
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6913,7 +6985,7 @@ THREE.OBJLoader = function () {
 }();
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6923,7 +6995,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _materials = __webpack_require__(35);
+var _materials = __webpack_require__(36);
 
 Object.keys(_materials).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -6936,7 +7008,7 @@ Object.keys(_materials).forEach(function (key) {
 });
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6952,180 +7024,7 @@ var Materials = {
 exports.Materials = Materials;
 
 /***/ }),
-/* 36 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Raycaster = function () {
-  function Raycaster(domElement, camera) {
-    _classCallCheck(this, Raycaster);
-
-    this.domElement = domElement;
-    this.camera = camera;
-    this.raycaster = new THREE.Raycaster();
-    this.mouse = new THREE.Vector2();
-    this.rect = this.domElement.getBoundingClientRect();
-  }
-
-  _createClass(Raycaster, [{
-    key: "resize",
-    value: function resize() {
-      // resize from doc target
-      this.rect = this.domElement.getBoundingClientRect();
-    }
-  }, {
-    key: "cast",
-    value: function cast(e, objects) {
-      // cast from mouse, intersect objects
-      this.mouse.x = (e.clientX - this.rect.left) / this.rect.width * 2 - 1;
-      this.mouse.y = -((e.clientY - this.rect.top) / this.rect.height * 2 - 1);
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      return this.raycaster.intersectObjects(objects);
-    }
-  }]);
-
-  return Raycaster;
-}();
-
-exports.Raycaster = Raycaster;
-
-/***/ }),
 /* 37 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _timer = __webpack_require__(38);
-
-Object.keys(_timer).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _timer[key];
-    }
-  });
-});
-
-/***/ }),
-/* 38 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Timer = function () {
-  function Timer() {
-    _classCallCheck(this, Timer);
-
-    // timekeeping
-
-    this.time = new Date().getTime();
-    this.age = 0;
-  }
-
-  _createClass(Timer, [{
-    key: "getDelta",
-    value: function getDelta() {
-      // update timer, get delta time
-
-      var now = new Date().getTime();
-      var delta = (now - this.time) / 1000.;
-      this.age += delta;
-      this.time = now;
-
-      return delta;
-    }
-  }]);
-
-  return Timer;
-}();
-
-exports.Timer = Timer;
-
-/***/ }),
-/* 39 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Renderer2d = function () {
-  function Renderer2d(domElement, width, height, camera) {
-    _classCallCheck(this, Renderer2d);
-
-    // 2d canvas overlay
-    this.cvs = document.createElement('canvas');
-    this.ctx = this.cvs.getContext('2d');
-    this.cvs.width = width;
-    this.cvs.height = height;
-    this.ctx.font = '20px Playfair Display';
-    this.camera = camera;
-
-    // add to doc
-    domElement.append(this.cvs);
-  }
-
-  _createClass(Renderer2d, [{
-    key: 'clear',
-    value: function clear() {
-      this.ctx.clearRect(0, 0, this.cvs.width, this.cvs.height);
-    }
-  }, {
-    key: 'resize',
-    value: function resize(width, height) {
-      this.cvs.width = width;
-      this.cvs.height = height;
-    }
-  }, {
-    key: 'render',
-    value: function render(delta, objects) {
-      this.clear();
-      for (var i = 0, len = objects.length; i < len; ++i) {
-        objects[i].draw(this.ctx);
-      }
-      this.ctx.fillRect(0, 0, 20, 20);
-    }
-  }]);
-
-  return Renderer2d;
-}();
-
-exports.Renderer2d = Renderer2d;
-
-/***/ }),
-/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7183,6 +7082,166 @@ var TextNode = function () {
 }();
 
 exports.TextNode = TextNode;
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Raycaster = function () {
+  function Raycaster(domElement, camera) {
+    _classCallCheck(this, Raycaster);
+
+    this.domElement = domElement;
+    this.camera = camera;
+    this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
+    this.rect = this.domElement.getBoundingClientRect();
+  }
+
+  _createClass(Raycaster, [{
+    key: "resize",
+    value: function resize() {
+      // resize from doc target
+      this.rect = this.domElement.getBoundingClientRect();
+    }
+  }, {
+    key: "cast",
+    value: function cast(e, objects) {
+      // cast from mouse, intersect objects
+      this.mouse.x = (e.clientX - this.rect.left) / this.rect.width * 2 - 1;
+      this.mouse.y = -((e.clientY - this.rect.top) / this.rect.height * 2 - 1);
+      this.raycaster.setFromCamera(this.mouse, this.camera);
+      return this.raycaster.intersectObjects(objects);
+    }
+  }]);
+
+  return Raycaster;
+}();
+
+exports.Raycaster = Raycaster;
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _timer = __webpack_require__(40);
+
+Object.keys(_timer).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _timer[key];
+    }
+  });
+});
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Timer = function () {
+  function Timer() {
+    _classCallCheck(this, Timer);
+
+    // timekeeping
+
+    this.time = new Date().getTime();
+    this.age = 0;
+  }
+
+  _createClass(Timer, [{
+    key: "getDelta",
+    value: function getDelta() {
+      // update timer, get delta time
+
+      var now = new Date().getTime();
+      var delta = (now - this.time) / 1000.;
+      this.age += delta;
+      this.time = now;
+
+      return delta;
+    }
+  }]);
+
+  return Timer;
+}();
+
+exports.Timer = Timer;
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/**
+  @author meatbags / https://github.com/meatbags
+  **/
+
+THREE.PosterShader = {
+  uniforms: {
+    'tDiffuse': { value: null }
+  },
+  vertexShader: '\n    varying vec2 vUv;\n\n    void main() {\n      vUv = uv;\n      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n    }\n  ',
+  fragmentShader: '\n    #define PI 3.14159\n    #define UV_SCALE 0.02\n    #define MAX_HEIGHT 0.5\n    varying vec2 vUv;\n    uniform sampler2D tDiffuse;\n\n    float posterise(float val, float amount) {\n      return floor(val * amount) / amount;\n    }\n\n    float posteriseCeil(float val, float amount) {\n      return ceil(val * amount) / amount;\n    }\n\n    void main() {\n      vec4 frag = texture2D(tDiffuse, vUv);\n      frag.r = posterise(frag.r, 128.0);\n      frag.g = posterise(frag.g, 128.0);\n      frag.b = posterise(frag.b, 128.0);\n      gl_FragColor = frag;\n    }\n  '
+};
+
+// render pass
+THREE.PosterPass = function (size) {
+  THREE.Pass.call(this);
+  this.size = size;
+  this.shader = THREE.PosterShader;
+  this.material = new THREE.ShaderMaterial(this.shader);
+  this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  this.scene = new THREE.Scene();
+  this.quad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), this.material);
+  this.quad.frustumCulled = false;
+  this.scene.add(this.quad);
+  this.time = 0;
+};
+
+THREE.PosterPass.prototype = Object.assign(Object.create(THREE.Pass.prototype), {
+  constructor: THREE.PosterPass,
+  render: function render(renderer, writeBuffer, readBuffer, delta, maskActive) {
+    this.shader.uniforms['tDiffuse'].value = readBuffer.texture;
+    if (this.renderToScreen) {
+      renderer.render(this.scene, this.camera);
+    } else {
+      renderer.render(this.scene, this.camera, writeBuffer, this.clear);
+    }
+  }
+});
 
 /***/ })
 /******/ ]);
