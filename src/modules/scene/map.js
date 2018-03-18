@@ -18,8 +18,11 @@ class Map {
   }
 
   loadScene() {
-    this.floor = new THREE.Mesh(new THREE.BoxBufferGeometry(100, 2, 100), Materials.default.clone());
-    this.scene.add(this.floor);
+    this.floor = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 2, 200), Materials.default.clone());
+    this.ceiling = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 1, 200), Materials.default.clone());
+    this.floor.position.y = 0;
+    this.ceiling.position.y = 22.4;
+    this.scene.add(this.floor, this.ceiling);
     this.collider.add(this.floor);
 
     // test grid

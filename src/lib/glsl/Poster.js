@@ -31,9 +31,9 @@ THREE.PosterShader = {
 
     void main() {
       vec4 frag = texture2D(tDiffuse, vUv);
-      frag.r = posterise(frag.r, 128.0);
-      frag.g = posterise(frag.g, 128.0);
-      frag.b = posterise(frag.b, 128.0);
+      frag.r = posterise(frag.r, 64.0);
+      //frag.g = posterise(frag.g, 128.0);
+      //frag.b = posterise(frag.b, 128.0);
       gl_FragColor = frag;
     }
   `

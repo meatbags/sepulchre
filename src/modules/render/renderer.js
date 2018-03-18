@@ -45,8 +45,8 @@ class Renderer {
     this.composer.setSize(this.width, this.height);
     this.composer.addPass(this.renderPass);
     this.composer.addPass(this.FXAAPass);
-    this.composer.addPass(this.bloomPass);
     this.composer.addPass(this.posterPass);
+    this.composer.addPass(this.bloomPass);
     this.composer.addPass(this.noisePass);
     this.renderer.gammaInput = true;
     this.renderer.gammaOutput = true;

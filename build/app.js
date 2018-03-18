@@ -75,7 +75,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _keyboard = __webpack_require__(25);
+var _keyboard = __webpack_require__(26);
 
 Object.keys(_keyboard).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -87,7 +87,7 @@ Object.keys(_keyboard).forEach(function (key) {
   });
 });
 
-var _mouse = __webpack_require__(26);
+var _mouse = __webpack_require__(27);
 
 Object.keys(_mouse).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -110,7 +110,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _general = __webpack_require__(27);
+var _general = __webpack_require__(28);
 
 Object.keys(_general).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -187,9 +187,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _render = __webpack_require__(5);
 
-var _scene = __webpack_require__(20);
+var _scene = __webpack_require__(21);
 
-var _time = __webpack_require__(39);
+var _time = __webpack_require__(40);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -268,7 +268,7 @@ Object.keys(_renderer).forEach(function (key) {
   });
 });
 
-var _renderer_2d = __webpack_require__(19);
+var _renderer_2d = __webpack_require__(20);
 
 Object.keys(_renderer_2d).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -348,8 +348,8 @@ var Renderer = function () {
       this.composer.setSize(this.width, this.height);
       this.composer.addPass(this.renderPass);
       this.composer.addPass(this.FXAAPass);
-      this.composer.addPass(this.bloomPass);
       this.composer.addPass(this.posterPass);
+      this.composer.addPass(this.bloomPass);
       this.composer.addPass(this.noisePass);
       this.renderer.gammaInput = true;
       this.renderer.gammaOutput = true;
@@ -395,7 +395,7 @@ __webpack_require__(17);
 
 __webpack_require__(18);
 
-__webpack_require__(41);
+__webpack_require__(19);
 
 /***/ }),
 /* 8 */
@@ -1269,7 +1269,7 @@ THREE.NoiseShader = {
     'time': { value: 0.0 }
   },
   vertexShader: '\n    varying vec2 vUv;\n\n    void main() {\n      vUv = uv;\n      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n    }\n  ',
-  fragmentShader: '\n    varying vec2 vUv;\n    uniform float time;\n    uniform sampler2D tDiffuse;\n\n    float rand(vec2 seed) {\n      return fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453);\n    }\n\n    void main() {\n      vec4 tex = texture2D(tDiffuse, vUv);\n      float scale = 1.0 - tex.r;\n      float r = tex.r + rand(vUv + time) * 0.02 * scale;\n      float g = tex.g + rand(vUv + time + 1.) * 0.02 * scale;\n      float b = tex.b + rand(vUv + time + 2.) * 0.03 * scale;\n\n      gl_FragColor = vec4(r, g, b, tex.a);\n    }\n  '
+  fragmentShader: '\n    varying vec2 vUv;\n    uniform float time;\n    uniform sampler2D tDiffuse;\n\n    float rand(vec2 seed) {\n      return fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453);\n    }\n\n    void main() {\n      vec4 tex = texture2D(tDiffuse, vUv);\n      float scale = 1.0 - tex.r;\n      float r = tex.r + rand(vUv + time) * 0.04 * scale;\n      float g = tex.g + rand(vUv + time + 1.) * 0.04 * scale;\n      float b = tex.b + rand(vUv + time + 2.) * 0.06 * scale;\n      gl_FragColor = vec4(r, g, b, tex.a);\n    }\n  '
 };
 
 // render pass
@@ -1329,6 +1329,51 @@ THREE.DepthShader = {
 "use strict";
 
 
+/**
+  @author meatbags / https://github.com/meatbags
+  **/
+
+THREE.PosterShader = {
+  uniforms: {
+    'tDiffuse': { value: null }
+  },
+  vertexShader: '\n    varying vec2 vUv;\n\n    void main() {\n      vUv = uv;\n      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n    }\n  ',
+  fragmentShader: '\n    #define PI 3.14159\n    #define UV_SCALE 0.02\n    #define MAX_HEIGHT 0.5\n    varying vec2 vUv;\n    uniform sampler2D tDiffuse;\n\n    float posterise(float val, float amount) {\n      return floor(val * amount) / amount;\n    }\n\n    float posteriseCeil(float val, float amount) {\n      return ceil(val * amount) / amount;\n    }\n\n    void main() {\n      vec4 frag = texture2D(tDiffuse, vUv);\n      frag.r = posterise(frag.r, 64.0);\n      //frag.g = posterise(frag.g, 128.0);\n      //frag.b = posterise(frag.b, 128.0);\n      gl_FragColor = frag;\n    }\n  '
+};
+
+// render pass
+THREE.PosterPass = function (size) {
+  THREE.Pass.call(this);
+  this.size = size;
+  this.shader = THREE.PosterShader;
+  this.material = new THREE.ShaderMaterial(this.shader);
+  this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  this.scene = new THREE.Scene();
+  this.quad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), this.material);
+  this.quad.frustumCulled = false;
+  this.scene.add(this.quad);
+  this.time = 0;
+};
+
+THREE.PosterPass.prototype = Object.assign(Object.create(THREE.Pass.prototype), {
+  constructor: THREE.PosterPass,
+  render: function render(renderer, writeBuffer, readBuffer, delta, maskActive) {
+    this.shader.uniforms['tDiffuse'].value = readBuffer.texture;
+    if (this.renderToScreen) {
+      renderer.render(this.scene, this.camera);
+    } else {
+      renderer.render(this.scene, this.camera, writeBuffer, this.clear);
+    }
+  }
+});
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -1381,7 +1426,7 @@ var Renderer2d = function () {
 exports.Renderer2d = Renderer2d;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1391,7 +1436,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _scene = __webpack_require__(21);
+var _scene = __webpack_require__(22);
 
 Object.keys(_scene).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -1404,7 +1449,7 @@ Object.keys(_scene).forEach(function (key) {
 });
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1417,15 +1462,15 @@ exports.Scene = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _camera = __webpack_require__(22);
+var _camera = __webpack_require__(23);
 
-var _lighting = __webpack_require__(23);
+var _lighting = __webpack_require__(24);
 
-var _player = __webpack_require__(24);
+var _player = __webpack_require__(25);
 
-var _map = __webpack_require__(28);
+var _map = __webpack_require__(29);
 
-var _raycaster = __webpack_require__(38);
+var _raycaster = __webpack_require__(39);
 
 var _input = __webpack_require__(0);
 
@@ -1507,7 +1552,7 @@ var Scene = function () {
 exports.Scene = Scene;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1567,7 +1612,7 @@ var Camera = function () {
 exports.Camera = Camera;
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1590,7 +1635,7 @@ var Lighting = function () {
     this.scene = scene;
     this.lights = {
       point: {
-        a: new THREE.PointLight(0xffffff, 1, 100, 2)
+        //a: new THREE.PointLight(0xffffff, 1, 100, 2)
       },
       ambient: {
         a: new THREE.AmbientLight(0xffffff, 0.05)
@@ -1613,7 +1658,7 @@ var Lighting = function () {
   _createClass(Lighting, [{
     key: "setLightPositions",
     value: function setLightPositions() {
-      this.lights.point.a.position.set(10, 10, 10);
+      //this.lights.point.a.position.set(10, 10, 10);
     }
   }]);
 
@@ -1623,7 +1668,7 @@ var Lighting = function () {
 exports.Lighting = Lighting;
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1692,8 +1737,8 @@ var Player = function () {
 
     // add to scene
     this.group = new THREE.Group();
-    this.light = new THREE.PointLight(0xffffff, 0.1);
-    this.light.position.y = 1;
+    this.light = new THREE.PointLight(0xffffff, 0.25);
+    this.light.position.y = 1.8;
     this.group.add(this.light);
     this.scene.add(this.group);
   }
@@ -1832,7 +1877,7 @@ var Player = function () {
 exports.Player = Player;
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1910,7 +1955,7 @@ var Keyboard = function () {
 exports.Keyboard = Keyboard;
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2005,7 +2050,7 @@ var Mouse = function () {
 exports.Mouse = Mouse;
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2034,7 +2079,7 @@ exports.Rand = Rand;
 exports.TwoPI = TwoPI;
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2047,13 +2092,13 @@ exports.Map = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _loader = __webpack_require__(29);
+var _loader = __webpack_require__(30);
 
-var _conf = __webpack_require__(35);
+var _conf = __webpack_require__(36);
 
 var _maths = __webpack_require__(1);
 
-var _text_node = __webpack_require__(37);
+var _text_node = __webpack_require__(38);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2078,8 +2123,11 @@ var Map = function () {
     value: function loadScene() {
       var _this = this;
 
-      this.floor = new THREE.Mesh(new THREE.BoxBufferGeometry(100, 2, 100), _conf.Materials.default.clone());
-      this.scene.add(this.floor);
+      this.floor = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 2, 200), _conf.Materials.default.clone());
+      this.ceiling = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 1, 200), _conf.Materials.default.clone());
+      this.floor.position.y = 0;
+      this.ceiling.position.y = 22.4;
+      this.scene.add(this.floor, this.ceiling);
       this.collider.add(this.floor);
 
       // test grid
@@ -2181,7 +2229,7 @@ var Map = function () {
 exports.Map = Map;
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2191,7 +2239,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _load_obj = __webpack_require__(30);
+var _load_obj = __webpack_require__(31);
 
 Object.keys(_load_obj).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -2204,7 +2252,7 @@ Object.keys(_load_obj).forEach(function (key) {
 });
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2217,7 +2265,7 @@ exports.LoadOBJ = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-__webpack_require__(31);
+__webpack_require__(32);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2355,20 +2403,20 @@ var LoadOBJ = function () {
 exports.LoadOBJ = LoadOBJ;
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(32);
-
 __webpack_require__(33);
 
 __webpack_require__(34);
 
+__webpack_require__(35);
+
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5871,7 +5919,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })();
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6384,7 +6432,7 @@ THREE.MTLLoader.MaterialCreator.prototype = {
 };
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6985,7 +7033,7 @@ THREE.OBJLoader = function () {
 }();
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6995,7 +7043,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _materials = __webpack_require__(36);
+var _materials = __webpack_require__(37);
 
 Object.keys(_materials).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -7008,7 +7056,7 @@ Object.keys(_materials).forEach(function (key) {
 });
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7024,7 +7072,7 @@ var Materials = {
 exports.Materials = Materials;
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7084,7 +7132,7 @@ var TextNode = function () {
 exports.TextNode = TextNode;
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7132,7 +7180,7 @@ var Raycaster = function () {
 exports.Raycaster = Raycaster;
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7142,7 +7190,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _timer = __webpack_require__(40);
+var _timer = __webpack_require__(41);
 
 Object.keys(_timer).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -7155,7 +7203,7 @@ Object.keys(_timer).forEach(function (key) {
 });
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7197,51 +7245,6 @@ var Timer = function () {
 }();
 
 exports.Timer = Timer;
-
-/***/ }),
-/* 41 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/**
-  @author meatbags / https://github.com/meatbags
-  **/
-
-THREE.PosterShader = {
-  uniforms: {
-    'tDiffuse': { value: null }
-  },
-  vertexShader: '\n    varying vec2 vUv;\n\n    void main() {\n      vUv = uv;\n      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n    }\n  ',
-  fragmentShader: '\n    #define PI 3.14159\n    #define UV_SCALE 0.02\n    #define MAX_HEIGHT 0.5\n    varying vec2 vUv;\n    uniform sampler2D tDiffuse;\n\n    float posterise(float val, float amount) {\n      return floor(val * amount) / amount;\n    }\n\n    float posteriseCeil(float val, float amount) {\n      return ceil(val * amount) / amount;\n    }\n\n    void main() {\n      vec4 frag = texture2D(tDiffuse, vUv);\n      frag.r = posterise(frag.r, 128.0);\n      frag.g = posterise(frag.g, 128.0);\n      frag.b = posterise(frag.b, 128.0);\n      gl_FragColor = frag;\n    }\n  '
-};
-
-// render pass
-THREE.PosterPass = function (size) {
-  THREE.Pass.call(this);
-  this.size = size;
-  this.shader = THREE.PosterShader;
-  this.material = new THREE.ShaderMaterial(this.shader);
-  this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  this.scene = new THREE.Scene();
-  this.quad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), this.material);
-  this.quad.frustumCulled = false;
-  this.scene.add(this.quad);
-  this.time = 0;
-};
-
-THREE.PosterPass.prototype = Object.assign(Object.create(THREE.Pass.prototype), {
-  constructor: THREE.PosterPass,
-  render: function render(renderer, writeBuffer, readBuffer, delta, maskActive) {
-    this.shader.uniforms['tDiffuse'].value = readBuffer.texture;
-    if (this.renderToScreen) {
-      renderer.render(this.scene, this.camera);
-    } else {
-      renderer.render(this.scene, this.camera, writeBuffer, this.clear);
-    }
-  }
-});
 
 /***/ })
 /******/ ]);

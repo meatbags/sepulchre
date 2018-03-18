@@ -45,8 +45,8 @@ class Player {
 
     // add to scene
     this.group = new THREE.Group();
-    this.light = new THREE.PointLight(0xffffff, 0.1);
-    this.light.position.y = 1;
+    this.light = new THREE.PointLight(0xffffff, 0.25);
+    this.light.position.y = 1.8;
     this.group.add(this.light);
     this.scene.add(this.group);
   }
