@@ -1,6 +1,6 @@
 # This file uses centimeters as units for non-parametric coordinates.
 
-mtllib blob.mtl
+mtllib column.mtl
 g default
 v 0.937500 1.625001 -3.998639
 v -0.937500 1.625001 -3.998638

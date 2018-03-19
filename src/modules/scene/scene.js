@@ -45,9 +45,23 @@ class Scene {
   }
 
   update(delta) {
+    if (this.teleportFlag) {
+      this.teleportFlag = false;
+      this.player.teleport(this.teleport);
+      this.map.teleport(this.teleport);
+    }
+
+    // set camera & scene
     this.player.update(delta);
     this.camera.update(delta);
     this.map.update(delta);
+
+    // wrap player, objects
+    const tele = this.map.getTeleport(this.player.getTargetPosition());
+    if (tele.x || tele.z) {
+      this.teleportFlag = true;
+      this.teleport = tele;
+    }
   }
 
   getScene() {

@@ -7,12 +7,11 @@ class Player {
     this.scene = scene;
     this.colliderSystem = colliderSystem;
     this.domElement = domElement;
-    var y = 10;
-    this.position = new THREE.Vector3(0, y, 0);
+    this.position = new THREE.Vector3(0, 1, 0);
     this.rotation = {pitch: 0, roll: 0, yaw: 0};
     this.motion = new THREE.Vector3();
     this.target = {
-      position: new THREE.Vector3(0, y, 0),
+      position: new THREE.Vector3(0, 1, 0),
       rotation: {pitch: 0, roll: 0, yaw: 0},
       motion: new THREE.Vector3()
     };
@@ -168,6 +167,18 @@ class Player {
     this.rotation.pitch = Blend(this.rotation.pitch, this.target.rotation.pitch, this.adjust.slow);
     this.group.position.set(this.position.x, this.position.y, this.position.z);
 	}
+
+  getTargetPosition() {
+    return this.target.position;
+  }
+
+  teleport(p) {
+    // teleport player (translate)
+    this.position.x += p.x;
+    this.target.position.x += p.x;
+    this.position.z += p.z;
+    this.target.position.z += p.z;
+  }
 };
 
 export { Player };

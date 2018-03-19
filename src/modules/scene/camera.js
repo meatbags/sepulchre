@@ -3,7 +3,7 @@ class Camera {
     // perspective camera which tracks player movement
     this.position = position;
     this.rotation = rotation;
-    this.fov = 75;
+    this.fov = 65;
     this.aspectRatio = width / height;
     this.offset = 0.1;
     this.height = 2;
@@ -23,12 +23,24 @@ class Camera {
     const y = this.position.y + this.height;
     this.camera.up.z = -Math.sin(this.rotation.yaw) * this.rotation.roll;
     this.camera.up.x = Math.cos(this.rotation.yaw) * this.rotation.roll;
-    this.camera.position.set(this.position.x - Math.sin(this.rotation.yaw) * offsetXZ / 4, y - Math.sin(this.rotation.pitch) * offsetY / 4, this.position.z - Math.cos(this.rotation.yaw) * offsetXZ / 4);
-    this.camera.lookAt(new THREE.Vector3(this.position.x + Math.sin(this.rotation.yaw) * offsetXZ, y + Math.sin(this.rotation.pitch) * offsetY, this.position.z + Math.cos(this.rotation.yaw) * offsetXZ));
+    this.camera.position.set(
+      this.position.x - Math.sin(this.rotation.yaw) * offsetXZ / 4,
+      y - Math.sin(this.rotation.pitch) * offsetY / 4,
+      this.position.z - Math.cos(this.rotation.yaw) * offsetXZ / 4
+    );
+    this.camera.lookAt(
+      new THREE.Vector3(this.position.x + Math.sin(this.rotation.yaw) * offsetXZ,
+      y + Math.sin(this.rotation.pitch) * offsetY,
+      this.position.z + Math.cos(this.rotation.yaw) * offsetXZ)
+    );
   }
 
   getCamera() {
     return this.camera;
+  }
+
+  teleport() {
+    this.camera.updateProjectionMatrix();
   }
 }
 

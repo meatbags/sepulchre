@@ -1530,9 +1530,23 @@ var Scene = function () {
   }, {
     key: 'update',
     value: function update(delta) {
+      if (this.teleportFlag) {
+        this.teleportFlag = false;
+        this.player.teleport(this.teleport);
+        this.map.teleport(this.teleport);
+      }
+
+      // set camera & scene
       this.player.update(delta);
       this.camera.update(delta);
       this.map.update(delta);
+
+      // wrap player, objects
+      var tele = this.map.getTeleport(this.player.getTargetPosition());
+      if (tele.x || tele.z) {
+        this.teleportFlag = true;
+        this.teleport = tele;
+      }
     }
   }, {
     key: 'getScene',
@@ -1573,7 +1587,7 @@ var Camera = function () {
     // perspective camera which tracks player movement
     this.position = position;
     this.rotation = rotation;
-    this.fov = 75;
+    this.fov = 65;
     this.aspectRatio = width / height;
     this.offset = 0.1;
     this.height = 2;
@@ -1603,6 +1617,11 @@ var Camera = function () {
     key: "getCamera",
     value: function getCamera() {
       return this.camera;
+    }
+  }, {
+    key: "teleport",
+    value: function teleport() {
+      this.camera.updateProjectionMatrix();
     }
   }]);
 
@@ -1697,12 +1716,11 @@ var Player = function () {
     this.scene = scene;
     this.colliderSystem = colliderSystem;
     this.domElement = domElement;
-    var y = 10;
-    this.position = new THREE.Vector3(0, y, 0);
+    this.position = new THREE.Vector3(0, 1, 0);
     this.rotation = { pitch: 0, roll: 0, yaw: 0 };
     this.motion = new THREE.Vector3();
     this.target = {
-      position: new THREE.Vector3(0, y, 0),
+      position: new THREE.Vector3(0, 1, 0),
       rotation: { pitch: 0, roll: 0, yaw: 0 },
       motion: new THREE.Vector3()
     };
@@ -1866,6 +1884,20 @@ var Player = function () {
       this.rotation.yaw += (0, _maths.MinAngleBetween)(this.rotation.yaw, this.target.rotation.yaw) * this.adjust.fast;
       this.rotation.pitch = (0, _maths.Blend)(this.rotation.pitch, this.target.rotation.pitch, this.adjust.slow);
       this.group.position.set(this.position.x, this.position.y, this.position.z);
+    }
+  }, {
+    key: 'getTargetPosition',
+    value: function getTargetPosition() {
+      return this.target.position;
+    }
+  }, {
+    key: 'teleport',
+    value: function teleport(p) {
+      // teleport player (translate)
+      this.position.x += p.x;
+      this.target.position.x += p.x;
+      this.position.z += p.z;
+      this.target.position.z += p.z;
     }
   }]);
 
@@ -2115,6 +2147,9 @@ var Map = function () {
     this.centreY = height / 2;
     this.interactive = [];
     this.loader = new _loader.LoadOBJ('./assets/');
+    this.gridSize = 26;
+    this.gridThreshold = this.gridSize / 2;
+    this.polyCount = 0;
     this.loadScene();
   }
 
@@ -2130,7 +2165,7 @@ var Map = function () {
       this.scene.add(this.floor, this.ceiling);
       this.collider.add(this.floor);
 
-      // test grid
+      // blocks
       for (var x = -50; x < 50; x += 8) {
         for (var z = -50; z < 50; z += 8) {
           var h = 1 + Math.random() * 2;
@@ -2142,21 +2177,25 @@ var Map = function () {
         }
       }
 
-      // test model load
-      this.loader.load('blob').then(function (map) {
-        for (var x = -100; x < 101; x += 25) {
-          for (var z = -100; z < 101; z += 25) {
-            var clone = map.clone();
-            clone.position.x = x;
-            clone.position.z = z;
-            _this.scene.add(clone);
-          }
-        }
-        //this.scene.add(map);
-
+      // infinite column grid
+      this.loader.load('column').then(function (map) {
+        var mapPolyCount = 0;
         map.children.forEach(function (child) {
+          mapPolyCount += child.geometry.attributes.position.array.length / child.geometry.attributes.position.itemSize;
           _this.collider.add(new Collider.Mesh(child));
         });
+
+        var limit = _this.gridThreshold + _this.gridSize * 3;
+        for (var x = -limit; x <= limit; x += _this.gridSize) {
+          for (var z = -limit; z <= limit; z += _this.gridSize) {
+            var col = map.clone();
+            col.position.set(x, 0, z);
+            _this.scene.add(col);
+            _this.polyCount += mapPolyCount;
+          }
+        }
+
+        console.log('~Polygons', _this.polyCount);
       }, function (err) {
         console.warn('Load error:', err);
       });
@@ -2210,6 +2249,25 @@ var Map = function () {
     value: function getInteractive() {
       // get interactive objects
       return this.interactive;
+    }
+  }, {
+    key: 'getTeleport',
+    value: function getTeleport(p) {
+      return {
+        x: p.x > this.gridThreshold ? -this.gridSize : p.x < -this.gridThreshold ? this.gridSize : 0,
+        z: p.z > this.gridThreshold ? -this.gridSize : p.z < -this.gridThreshold ? this.gridSize : 0
+      };
+    }
+  }, {
+    key: 'teleport',
+    value: function teleport(p) {
+      for (var i = 0, len = this.interactive.length; i < len; ++i) {
+        this.interactive[i].position.x += p.x;
+        this.interactive[i].position.z += p.z;
+      }
+      for (var i = 0, len = this.textNodes.length; i < len; ++i) {
+        this.textNodes[i].teleport(p);
+      }
     }
   }, {
     key: 'activateObjects',
@@ -7115,6 +7173,14 @@ var TextNode = function () {
       } else {
         this.behindCamera = true;
       }
+    }
+  }, {
+    key: "teleport",
+    value: function teleport(p) {
+      this.position.x += p.x;
+      this.position.z += p.z;
+      this.mesh.position.x += p.x;
+      this.mesh.position.z += p.z;
     }
   }, {
     key: "draw",

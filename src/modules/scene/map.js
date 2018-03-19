@@ -14,6 +14,9 @@ class Map {
     this.centreY = height / 2;
     this.interactive = [];
     this.loader = new LoadOBJ('./assets/');
+    this.gridSize = 26;
+    this.gridThreshold = this.gridSize / 2;
+    this.polyCount = 0;
     this.loadScene();
   }
 
@@ -25,7 +28,7 @@ class Map {
     this.scene.add(this.floor, this.ceiling);
     this.collider.add(this.floor);
 
-    // test grid
+    // blocks
     for (var x=-50; x<50; x+=8) {
       for (var z=-50; z<50; z+=8) {
         const h = 1 + Math.random() * 2;
@@ -37,21 +40,25 @@ class Map {
       }
     }
 
-    // test model load
-    this.loader.load('blob').then((map) => {
-      for (var x=-100; x<101; x+=25) {
-        for (var z=-100; z<101; z+=25) {
-          const clone = map.clone();
-          clone.position.x = x;
-          clone.position.z = z;
-          this.scene.add(clone);
-        }
-      }
-      //this.scene.add(map);
-
+    // infinite column grid
+    this.loader.load('column').then((map) => {
+      var mapPolyCount = 0;
       map.children.forEach((child) => {
+        mapPolyCount += child.geometry.attributes.position.array.length / child.geometry.attributes.position.itemSize;
         this.collider.add(new Collider.Mesh(child));
       });
+
+      const limit = this.gridThreshold + this.gridSize * 3;
+      for (var x=-limit; x<=limit; x+=this.gridSize) {
+        for (var z=-limit; z<=limit; z+=this.gridSize) {
+          const col = map.clone();
+          col.position.set(x, 0, z);
+          this.scene.add(col);
+          this.polyCount += mapPolyCount;
+        }
+      }
+
+      console.log('~Polygons', this.polyCount);
     }, (err) => { console.warn('Load error:', err); });
 
     // test text nodes
@@ -99,6 +106,23 @@ class Map {
   getInteractive() {
     // get interactive objects
     return this.interactive;
+  }
+
+  getTeleport(p) {
+    return {
+      x: (p.x > this.gridThreshold) ? -this.gridSize : ((p.x < -this.gridThreshold) ? this.gridSize : 0),
+      z: (p.z > this.gridThreshold) ? -this.gridSize : ((p.z < -this.gridThreshold) ? this.gridSize : 0)
+    };
+  }
+
+  teleport(p) {
+    for (var i=0, len=this.interactive.length; i<len; ++i) {
+      this.interactive[i].position.x += p.x;
+      this.interactive[i].position.z += p.z;
+    }
+    for (var i=0, len=this.textNodes.length; i<len; ++i) {
+      this.textNodes[i].teleport(p);
+    }
   }
 
   activateObjects(objects) {

@@ -25,6 +25,13 @@ class TextNode {
     }
   }
 
+  teleport(p) {
+    this.position.x += p.x;
+    this.position.z += p.z;
+    this.mesh.position.x += p.x;
+    this.mesh.position.z += p.z;
+  }
+
   draw(ctx) {
     // project text onto screen
     if (!this.behindCamera) {
