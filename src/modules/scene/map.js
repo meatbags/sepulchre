@@ -64,7 +64,7 @@ class Map {
     // test text nodes
     this.textNodes = [];
     for (let i=0; i<40; ++i) {
-      const textNode = new TextNode('Hello world.', Rand(100), 6 + Rand(10), Rand(100));
+      const textNode = new TextNode('?', Rand(100), 6 + Rand(10), Rand(100));
       this.textNodes.push(textNode);
       this.scene.add(textNode.mesh);
     }

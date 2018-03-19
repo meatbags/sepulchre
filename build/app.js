@@ -2203,7 +2203,7 @@ var Map = function () {
       // test text nodes
       this.textNodes = [];
       for (var i = 0; i < 40; ++i) {
-        var textNode = new _text_node.TextNode('Hello world.', (0, _maths.Rand)(100), 6 + (0, _maths.Rand)(10), (0, _maths.Rand)(100));
+        var textNode = new _text_node.TextNode('?', (0, _maths.Rand)(100), 6 + (0, _maths.Rand)(10), (0, _maths.Rand)(100));
         this.textNodes.push(textNode);
         this.scene.add(textNode.mesh);
       }
