@@ -16,11 +16,9 @@ THREE.OBJLoader = ( function () {
 		var state = {
 			objects  : [],
 			object   : {},
-
 			vertices : [],
 			normals  : [],
 			uvs      : [],
-
 			materialLibraries : [],
 
 			startObject: function ( name, fromDeclaration ) {

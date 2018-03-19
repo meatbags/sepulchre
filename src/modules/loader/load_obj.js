@@ -13,6 +13,15 @@ class LoadOBJ {
     // conf
     this.bumpScale = 0.05;
     this.lightMapIntensity = 1;
+    this.envMapIntensity = 0.25;
+    this.envTextureCube = new THREE.CubeTextureLoader().load([
+      this.path + 'envmap/posx.jpg',
+      this.path + 'envmap/negx.jpg',
+      this.path + 'envmap/posy.jpg',
+      this.path + 'envmap/negy.jpg',
+      this.path + 'envmap/posz.jpg',
+      this.path + 'envmap/negz.jpg',
+    ]);
 
     // set root
     this.materialLoader.setPath(this.path);
@@ -53,7 +62,7 @@ class LoadOBJ {
 
   newMaterial(key, target, prop) {
     // make new material from props
-    this.materials[key][target] = new THREE.MeshPhongMaterial({});
+    this.materials[key][target] = new THREE.MeshPhysicalMaterial({});
     const mat = this.materials[key][target];
 
     // diffuse map (texture)
@@ -90,6 +99,10 @@ class LoadOBJ {
       mat.lightMap = tex_ka;
       mat.lightMapIntensity = this.lightMapIntensity;
     }
+
+    // add global env map
+    mat.envMap = this.envTextureCube;
+    mat.envMapIntensity = this.envMapIntensity; // mat.metalness ?
   }
 
   setMaterial(obj, materials) {
@@ -102,17 +115,6 @@ class LoadOBJ {
         obj.geometry.addAttribute('uv2', new THREE.BufferAttribute(obj.geometry.attributes.uv.array, 2));
       }
     }
-  }
-
-  testLoad() {
-    // test new loading funcs
-    this.manager = THREE.DefaultLoadingManager;
-		this.fileLoader = new THREE.FileLoader(this.manager);
-		this.fileLoader.setPath(this.path);
-		this.fileLoader.load('hangar_monday.mtl', (res) => {
-      // console.log(res.split('\n'));
-      // onLoad(this.parse(text));
-		}, () => {}, (err) => { console.warn(err); })
   }
 }
 

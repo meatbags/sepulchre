@@ -310,7 +310,7 @@ var Renderer = function () {
     this.size = new THREE.Vector2(this.width, this.height);
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(this.width, this.height);
-    this.renderer.setClearColor(0x444444, 1);
+    this.renderer.setClearColor(0x222222, 1);
     this.postProcessingSetup();
 
     // add to doc
@@ -1483,7 +1483,7 @@ var Scene = function () {
     _classCallCheck(this, Scene);
 
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x444444, 0.02);
+    this.scene.fog = new THREE.FogExp2(0x222222, 0.0275);
     this.collider = new Collider.System();
     this.player = new _player.Player(domElement, this.scene, this.collider);
     this.camera = new _camera.Camera(width, height, this.player.position, this.player.rotation);
@@ -2158,8 +2158,8 @@ var Map = function () {
     value: function loadScene() {
       var _this = this;
 
-      this.floor = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 2, 200), _conf.Materials.default.clone());
-      this.ceiling = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 1, 200), _conf.Materials.default.clone());
+      this.floor = new THREE.Mesh(new THREE.BoxBufferGeometry(250, 2, 250), _conf.Materials.default.clone());
+      this.ceiling = new THREE.Mesh(new THREE.BoxBufferGeometry(250, 1, 250), _conf.Materials.default.clone());
       this.floor.position.y = 0;
       this.ceiling.position.y = 22.4;
       this.scene.add(this.floor, this.ceiling);
@@ -2178,17 +2178,19 @@ var Map = function () {
       }
 
       // infinite column grid
-      this.loader.load('column').then(function (map) {
+      this.loader.load('column-culled').then(function (map) {
         var mapPolyCount = 0;
         map.children.forEach(function (child) {
           mapPolyCount += child.geometry.attributes.position.array.length / child.geometry.attributes.position.itemSize;
-          _this.collider.add(new Collider.Mesh(child));
+          //this.collider.add(new Collider.Mesh(child));
         });
 
         var limit = _this.gridThreshold + _this.gridSize * 3;
         for (var x = -limit; x <= limit; x += _this.gridSize) {
           for (var z = -limit; z <= limit; z += _this.gridSize) {
             var col = map.clone();
+            // hide culled faces by rotating
+            col.rotation.y = (z > 0 ? x < 0 ? 0 : 1 : x > 0 ? 2 : 3) * Math.PI / 2;
             col.position.set(x, 0, z);
             _this.scene.add(col);
             _this.polyCount += mapPolyCount;
@@ -2342,6 +2344,8 @@ var LoadOBJ = function () {
     // conf
     this.bumpScale = 0.05;
     this.lightMapIntensity = 1;
+    this.envMapIntensity = 0.25;
+    this.envTextureCube = new THREE.CubeTextureLoader().load([this.path + 'envmap/posx.jpg', this.path + 'envmap/negx.jpg', this.path + 'envmap/posy.jpg', this.path + 'envmap/negy.jpg', this.path + 'envmap/posz.jpg', this.path + 'envmap/negz.jpg']);
 
     // set root
     this.materialLoader.setPath(this.path);
@@ -2388,7 +2392,7 @@ var LoadOBJ = function () {
     key: 'newMaterial',
     value: function newMaterial(key, target, prop) {
       // make new material from props
-      this.materials[key][target] = new THREE.MeshPhongMaterial({});
+      this.materials[key][target] = new THREE.MeshPhysicalMaterial({});
       var mat = this.materials[key][target];
 
       // diffuse map (texture)
@@ -2425,6 +2429,10 @@ var LoadOBJ = function () {
         mat.lightMap = tex_ka;
         mat.lightMapIntensity = this.lightMapIntensity;
       }
+
+      // add global env map
+      mat.envMap = this.envTextureCube;
+      mat.envMapIntensity = this.envMapIntensity; // mat.metalness ?
     }
   }, {
     key: 'setMaterial',
@@ -2438,20 +2446,6 @@ var LoadOBJ = function () {
           obj.geometry.addAttribute('uv2', new THREE.BufferAttribute(obj.geometry.attributes.uv.array, 2));
         }
       }
-    }
-  }, {
-    key: 'testLoad',
-    value: function testLoad() {
-      // test new loading funcs
-      this.manager = THREE.DefaultLoadingManager;
-      this.fileLoader = new THREE.FileLoader(this.manager);
-      this.fileLoader.setPath(this.path);
-      this.fileLoader.load('hangar_monday.mtl', function (res) {
-        // console.log(res.split('\n'));
-        // onLoad(this.parse(text));
-      }, function () {}, function (err) {
-        console.warn(err);
-      });
     }
   }]);
 
@@ -6514,11 +6508,9 @@ THREE.OBJLoader = function () {
 								var state = {
 												objects: [],
 												object: {},
-
 												vertices: [],
 												normals: [],
 												uvs: [],
-
 												materialLibraries: [],
 
 												startObject: function startObject(name, fromDeclaration) {
@@ -7124,8 +7116,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var Materials = {
-  default: new THREE.MeshPhysicalMaterial({ emissive: 0, roughness: 1 })
+  default: new THREE.MeshPhysicalMaterial({ emissive: 0, roughness: 1, envMapIntensity: 0.25 })
 };
+
+Materials.default.envMap = new THREE.CubeTextureLoader().load(['./assets/envmap/posx.jpg', './assets/envmap/negx.jpg', './assets/envmap/posy.jpg', './assets/envmap/negy.jpg', './assets/envmap/posz.jpg', './assets/envmap/negz.jpg']);
 
 exports.Materials = Materials;
 

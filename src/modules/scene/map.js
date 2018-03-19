@@ -21,8 +21,8 @@ class Map {
   }
 
   loadScene() {
-    this.floor = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 2, 200), Materials.default.clone());
-    this.ceiling = new THREE.Mesh(new THREE.BoxBufferGeometry(200, 1, 200), Materials.default.clone());
+    this.floor = new THREE.Mesh(new THREE.BoxBufferGeometry(250, 2, 250), Materials.default.clone());
+    this.ceiling = new THREE.Mesh(new THREE.BoxBufferGeometry(250, 1, 250), Materials.default.clone());
     this.floor.position.y = 0;
     this.ceiling.position.y = 22.4;
     this.scene.add(this.floor, this.ceiling);
@@ -41,17 +41,19 @@ class Map {
     }
 
     // infinite column grid
-    this.loader.load('column').then((map) => {
+    this.loader.load('column-culled').then((map) => {
       var mapPolyCount = 0;
       map.children.forEach((child) => {
         mapPolyCount += child.geometry.attributes.position.array.length / child.geometry.attributes.position.itemSize;
-        this.collider.add(new Collider.Mesh(child));
+        //this.collider.add(new Collider.Mesh(child));
       });
 
       const limit = this.gridThreshold + this.gridSize * 3;
       for (var x=-limit; x<=limit; x+=this.gridSize) {
         for (var z=-limit; z<=limit; z+=this.gridSize) {
           const col = map.clone();
+          // hide culled faces by rotating
+          col.rotation.y = ((z > 0) ? ((x < 0) ? 0 : 1) : ((x > 0) ? 2 : 3)) * Math.PI / 2;
           col.position.set(x, 0, z);
           this.scene.add(col);
           this.polyCount += mapPolyCount;
