@@ -14,7 +14,7 @@ class Map {
     this.centreY = height / 2;
     this.interactive = [];
     this.loader = new LoadOBJ('./assets/');
-    this.gridSize = 26;
+    this.gridSize = 24;
     this.gridThreshold = this.gridSize / 2;
     this.polyCount = 0;
     this.loadScene();
@@ -22,15 +22,14 @@ class Map {
 
   loadScene() {
     this.floor = new THREE.Mesh(new THREE.BoxBufferGeometry(250, 2, 250), Materials.default.clone());
-    this.ceiling = new THREE.Mesh(new THREE.BoxBufferGeometry(250, 1, 250), Materials.default.clone());
-    this.floor.position.y = 0;
-    this.ceiling.position.y = 22.4;
-    this.scene.add(this.floor, this.ceiling);
+    this.floor.position.y = -1;
+    this.scene.add(this.floor);
     this.collider.add(this.floor);
 
     // blocks
-    for (var x=-50; x<50; x+=8) {
-      for (var z=-50; z<50; z+=8) {
+    var s = 50 / 3;
+    for (var x=-50 - s/2; x<50; x+=s) {
+      for (var z=-50 - s/2; z<50; z+=s) {
         const h = 1 + Math.random() * 2;
         const box = new THREE.Mesh(new THREE.BoxBufferGeometry(3, h, 3), Materials.default.clone());
         box.position.set(x, h / 2 - 0.1, z);
@@ -41,6 +40,24 @@ class Map {
     }
 
     // infinite column grid
+
+    this.loader.load('arches').then((map) => {
+      var mapPolyCount = 0;
+      map.children.forEach((child) => { mapPolyCount += child.geometry.attributes.position.array.length / child.geometry.attributes.position.itemSize; });
+
+      const limit = this.gridThreshold + this.gridSize * 3;
+      for (var x=-limit; x<=limit; x+=this.gridSize) {
+        for (var z=-limit; z<=limit; z+=this.gridSize) {
+          const roof = map.clone();
+          roof.position.set(x, 1, z);
+          this.scene.add(roof);
+          this.polyCount += mapPolyCount;
+        }
+      }
+
+      console.log('~Polygons', this.polyCount);
+    }, (err) => { console.warn('Load error:', err); });
+
     this.loader.load('column-culled').then((map) => {
       var mapPolyCount = 0;
       map.children.forEach((child) => {
@@ -65,7 +82,7 @@ class Map {
 
     // test text nodes
     this.textNodes = [];
-    for (let i=0; i<40; ++i) {
+    for (let i=0; i<10; ++i) {
       const textNode = new TextNode('?', Rand(100), 6 + Rand(10), Rand(100));
       this.textNodes.push(textNode);
       this.scene.add(textNode.mesh);

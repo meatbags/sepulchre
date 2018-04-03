@@ -1,36 +1,43 @@
 var path = require('path');
 var webpack = require('webpack');
-var dir = './src/';
-var output = './build';
+var Uglify = require('uglifyjs-webpack-plugin');
 
 module.exports = {
   entry: {
-    'app': dir + 'app.js',
-    'app.min': dir + 'app.js'
+    'app': './src/app.js',
+    'app.min': './src/app.js'
   },
   output: {
     library: 'stk',
     libraryTarget: 'var',
-    path: path.resolve(__dirname, output),
+    path: path.resolve(__dirname, './build'),
     filename: '[name].js'
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
-        loader: 'babel-loader',
-        query: {
-          presets: ['es2015']
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader"
         }
       }
     ]
   },
-  plugins: [
-    new webpack.optimize.UglifyJsPlugin({
-      include: /\.min\.js$/,
-      minimize: true
-    })
-  ],
+  optimization: {
+    minimizer: [
+      new Uglify({
+        cache: true,
+        parallel: true,
+        uglifyOptions: {
+          compress: false,
+          ecma: 6,
+          mangle: true
+        },
+        sourceMap: true
+      })
+    ]
+  },
   stats: {
       colors: true
   }
