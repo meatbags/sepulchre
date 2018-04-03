@@ -163,8 +163,8 @@ class Player {
     this.position.x = Blend(this.position.x, this.target.position.x, this.adjust.maximum);
     this.position.y = Blend(this.position.y, this.target.position.y, this.adjust.maximum);
     this.position.z = Blend(this.position.z, this.target.position.z, this.adjust.maximum);
-    this.rotation.yaw += MinAngleBetween(this.rotation.yaw, this.target.rotation.yaw) * this.adjust.fast;
-    this.rotation.pitch = Blend(this.rotation.pitch, this.target.rotation.pitch, this.adjust.slow);
+    this.rotation.yaw += MinAngleBetween(this.rotation.yaw, this.target.rotation.yaw) * this.adjust.maximum;
+    this.rotation.pitch = Blend(this.rotation.pitch, this.target.rotation.pitch, this.adjust.fast);
     this.group.position.set(this.position.x, this.position.y, this.position.z);
 	}
 

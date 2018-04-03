@@ -14,7 +14,7 @@ class Map {
     this.centreY = height / 2;
     this.interactive = [];
     this.loader = new LoadOBJ('./assets/');
-    this.gridSize = 24;
+    this.gridSize = 28;
     this.gridThreshold = this.gridSize / 2;
     this.polyCount = 0;
     this.loadScene();
@@ -40,8 +40,7 @@ class Map {
     }
 
     // infinite column grid
-
-    this.loader.load('arches').then((map) => {
+    this.loader.load('arches-culled').then((map) => {
       var mapPolyCount = 0;
       map.children.forEach((child) => { mapPolyCount += child.geometry.attributes.position.array.length / child.geometry.attributes.position.itemSize; });
 
@@ -49,7 +48,7 @@ class Map {
       for (var x=-limit; x<=limit; x+=this.gridSize) {
         for (var z=-limit; z<=limit; z+=this.gridSize) {
           const roof = map.clone();
-          roof.position.set(x, 1, z);
+          roof.position.set(x, 0, z);
           this.scene.add(roof);
           this.polyCount += mapPolyCount;
         }
